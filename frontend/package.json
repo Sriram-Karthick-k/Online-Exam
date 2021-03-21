@@ -2,12 +2,13 @@
   "name": "frontend",
   "version": "0.1.0",
   "private": true,
-  "proxyServer": "http://localhost:3001",
+  "proxy": "http://localhost:3001",
   "dependencies": {
     "@testing-library/jest-dom": "^5.11.9",
     "@testing-library/react": "^11.2.5",
     "@testing-library/user-event": "^12.8.3",
     "axios": "^0.21.1",
+    "node-sass": "^5.0.0",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "react-router-dom": "^5.2.0",
@@ -16,6 +17,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
+    "dev": "start npm run start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
