@@ -1,9 +1,13 @@
 import react, { useState } from "react"
+import imageCompression from 'browser-image-compression';
+
+
 function Admin() {
   const menuInitial = "1"
   const addParticipantsInitial = "1"
   const [menu, setMenu] = useState(menuInitial)
   const [addParticipants, setAddParticipants] = useState(addParticipantsInitial)
+  const [compressedImage,setCompreseedImage]=useState(false)
   function changeMenu(e) {
     var target = e.target.id.split("-")[2]
     if (target === "1") {
@@ -20,7 +24,9 @@ function Admin() {
     var target = e.target.id.split("-")[2]
     if (target === "1") {
       setAddParticipants("1")
+      setCompreseedImage(false)
     } else {
+      setCompreseedImage(false)
       setAddParticipants("2")
     }
   }
@@ -38,6 +44,27 @@ function Admin() {
   //   today = dd + '-' + mm + '-' + yyyy;
   //   return (today)
   // }
+  async function compressImage(event){
+    const imageFile = event.target.files[0];
+        // console.log('originalFile instanceof Blob', imageFile instanceof Blob); // true
+        // console.log(`originalFile size ${imageFile.size / 1024 / 1024} MB`);
+
+        const options = {
+          maxSizeMB: 1,
+          maxWidthOrHeight: 1920,
+          useWebWorker: true
+        }
+        try {
+          var compressedFile = await imageCompression(imageFile, options);
+          // console.log('compressedFile instanceof Blob', compressedFile instanceof Blob); // true
+          // console.log(`compressedFile size ${compressedFile.size / 1024 / 1024} MB`); // smaller than maxSizeMB
+          var imageUrl=URL.createObjectURL(compressedFile)
+          setCompreseedImage(imageUrl)
+        } catch (error) {
+          console.log(error);
+        }
+        
+  }
   return (
     <div className="admin copy-text">
       <div className="admin-index container">
@@ -70,6 +97,10 @@ function Admin() {
                 addParticipants === "1" ?
 
                   <div className="row register">
+                    <div className="image-div">
+                      <img  className="uploaded-image" src={compressedImage?compressedImage:"./images/profile.png"} alt="imageLogo"/>
+                      <input type="file" className="upload-file" name="imageUpload" id="imageUpload" accept=".jpg" onChange={compressImage} />
+                    </div>
                     <div className="register-lable col col-lg-6 col-md-6 col-sm-6 col-6">
                       <p>Register number :</p>
                     </div>
@@ -118,6 +149,10 @@ function Admin() {
                   </div>
                   :
                   <div className="row register">
+                    <div className="image-div">
+                      <img  className="uploaded-image" src={compressedImage?compressedImage:"./images/profile.png"} alt="imageLogo"/>
+                      <input type="file" className="upload-file" name="imageUpload" id="imageUpload" accept=".jpg" onChange={compressImage} />
+                    </div>
                     <div className="register-lable col col-lg-6 col-md-6 col-sm-6 col-6">
                       <p>Teacher Name :</p>
                     </div>
