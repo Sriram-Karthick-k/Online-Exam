@@ -15,8 +15,8 @@ input::selection {
     .form {
       display: flex;
       flex-direction: column;
-      width: 300px;
-      padding: 2rem;
+      max-width: 350px;
+      padding: 1.5rem;
       border-radius: 0.5rem;
       border: 1px solid $shadow-color;
       box-shadow: 5px 10px 15px $shadow-color;
@@ -113,6 +113,146 @@ input::selection {
       .error-text {
         color: red;
         margin-bottom: 0.5rem;
+      }
+    }
+  }
+  .admin-index {
+    border: 1px solid $shadow-color;
+    box-shadow: 5px 10px 15px $shadow-color;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    .menu {
+      margin: 0 0.5rem;
+      border-bottom: 2px solid $primary-color;
+      .menu-item {
+        cursor: pointer;
+        padding: 0.6rem;
+        font-size: 1.2rem;
+        border-top-left-radius: 0.6rem;
+        border-top-right-radius: 0.6rem;
+        transition: all 0.4s;
+      }
+      .menu-item:hover {
+        background-color: $primary-color;
+        color: $white;
+      }
+      .menu-item-active {
+        background-color: $primary-color;
+        color: $white;
+      }
+    }
+    .addParticipants {
+      padding: 2rem;
+      .menu {
+        border-bottom: 2px solid $font;
+        .menu-item-active {
+          background-color: $font;
+        }
+        .menu-item:hover {
+          background-color: $font;
+        }
+      }
+      .register {
+        color: $font;
+        margin-top: 2rem;
+        .register-lable {
+          margin-bottom: 1rem;
+          text-align: right;
+          padding: 0;
+          padding-right: 0.5rem;
+        }
+        .register-input {
+          margin-bottom: 1rem;
+          padding: 0;
+          font-size: 1.2rem;
+          input {
+            width: 100%;
+          }
+          .input {
+            border: none;
+            color: $font;
+            border-bottom: 2px solid $font;
+            background-color: transparent;
+            padding-bottom: 0.3rem;
+            padding-left: 0.3rem;
+            caret-color: $font;
+          }
+          .input:focus,
+          .input:active {
+            outline: none;
+          }
+        }
+        .button {
+          position: relative;
+          left: 50%;
+          transform: translate(-50%, 0);
+          .button-submit {
+            flex: 0 1 auto;
+            background-color: transparent;
+            padding: 1rem;
+            border: 2px solid $font;
+          }
+          .button-submit:hover {
+            background-color: $font;
+            color: $white;
+          }
+          .button-submit:focus,
+          .button-submit:active {
+            box-shadow: none;
+          }
+        }
+      }
+    }
+  }
+}
+@media (max-width: 750px) {
+  .admin {
+    .admin-index {
+      .menu {
+        .menu-item {
+          font-size: 1rem;
+        }
+      }
+    }
+  }
+}
+@media (max-width: 450px) {
+  .admin {
+    .admin-index {
+      .menu {
+        .menu-item {
+          font-size: 0.9rem;
+        }
+      }
+    }
+  }
+}
+@media (max-width: 375px) {
+  .admin {
+    .admin-index {
+      .menu {
+        .menu-item {
+          font-size: 0.6rem;
+        }
+      }
+    }
+  }
+}
+@media (min-width: 990px) {
+  .admin {
+    .admin-index {
+      .addParticipants {
+        .menu {
+          margin: 0 10rem;
+          .menu-item {
+          }
+        }
+        .register {
+          margin: 0 18rem;
+          margin-top: 2rem;
+        }
       }
     }
   }

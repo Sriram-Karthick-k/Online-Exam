@@ -55,6 +55,20 @@ app.route("/admin-login")
     }
   })
 
+app.get("/Auth",function(req,res){
+  var token=req.query.token
+  try{
+    var verified=jwt.verify(token,process.env.JWT_SECRET)
+  }catch(e){
+    console.log(e)
+  }
+  if(verified){
+    res.send({loggedIn:true})
+  }else{
+    res.send({loggedIn:false})
+  }
+})
+
 //server listen
 server.listen(3001,function(res){
   console.log("app is running in 3001")
