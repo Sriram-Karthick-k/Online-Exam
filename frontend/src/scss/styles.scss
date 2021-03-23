@@ -158,37 +158,44 @@ input::selection {
         }
       }
       .register {
+        overflow: hidden;
         color: $font;
         margin-top: 2rem;
-        .image-div{
+        .image-div {
           width: 100%;
           display: flex;
           flex-direction: column;
           justify-content: center;
-          .uploaded-image{
+          .uploaded-image {
             max-width: 100px;
             height: 100px;
-            max-height: 150px!important;
-            margin:auto;
+            max-height: 150px !important;
+            margin: auto;
             background-color: $font;
             margin-bottom: 1.3rem;
           }
-          .upload-file{
+          .upload-file {
             position: relative;
             left: 50%;
             margin-bottom: 2rem;
-            transform: translate(-30%,0);
-           }
+            transform: translate(-30%, 0);
+            overflow: hidden;
+          }
         }
-        
+        // .errorText {
+        //   color: $red;
+        //   text-align: center;
+        //   margin-bottom: 1.6rem;
+        // }
         .register-lable {
-          margin-bottom: 1rem;
+          margin-bottom: 1.3rem;
           text-align: right;
           padding: 0;
+          padding-top: 0.4rem;
           padding-right: 0.5rem;
         }
         .register-input {
-          margin-bottom: 1rem;
+          margin-bottom: 1.3rem;
           padding: 0;
           font-size: 1.2rem;
           input {
@@ -199,7 +206,6 @@ input::selection {
             color: $font;
             border-bottom: 2px solid $font;
             background-color: transparent;
-            padding-bottom: 0.3rem;
             padding-left: 0.3rem;
             caret-color: $font;
           }
@@ -217,6 +223,7 @@ input::selection {
             background-color: transparent;
             padding: 1rem;
             border: 2px solid $font;
+            border-radius: 0.6rem;
           }
           .button-submit:hover {
             background-color: $font;
@@ -276,9 +283,9 @@ input::selection {
         .register {
           margin: 0 18rem;
           margin-top: 2rem;
-          .image-div{
-            .upload-file{
-              transform: translate(-20%,0);
+          .image-div {
+            .upload-file {
+              transform: translate(-20%, 0);
             }
           }
         }
@@ -291,9 +298,9 @@ input::selection {
     .admin-index {
       .addParticipants {
         .register {
-          .image-div{
-            .upload-file{
-              transform: translate(-20%,0);
+          .image-div {
+            .upload-file {
+              transform: translate(-20%, 0);
             }
           }
         }

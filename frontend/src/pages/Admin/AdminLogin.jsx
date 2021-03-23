@@ -37,7 +37,7 @@ function Admin() {
       <div className="form-page">
         <form className="form page-center">
           <Error text={error} class="error-text text-center" />
-          <Input id="userName" for="userName" lableText="Username" class="form-input form__field" placeholder="User Name" name="userName" type="text" autofocus="true" />
+          <Input id="userName" for="userName" lableText="Username" class="form-input form__field" placeholder="User Name" name="userName" type="text" autofocus="false" />
           <Input id="password" for="password" lableText="Password" class="form-input form__field" placeholder="Password" name="password" type="password" autofocus="false" />
           <Button text="Login" class="btn" onclick={logIn} />
         </form>
