@@ -1,15 +1,17 @@
 import react, { useState } from "react"
 import imageCompression from 'browser-image-compression';
 import Error from "../../components/Error"
+import Axios from "axios";
 
 function Admin() {
   const menuInitial = "1"
   const addParticipantsInitial = "1"
-  const errorInitial = { imageSize: true }
+  const errorInitial = { addParticipants: false }
   const [menu, setMenu] = useState(menuInitial)
   const [addParticipants, setAddParticipants] = useState(addParticipantsInitial)
   const [compressedImage, setCompreseedImage] = useState(false)
   const [error, setError] = useState(errorInitial)
+  const [compressedImageFile, setCompressedImageFile] = useState(false)
   function changeMenu(e) {
     var target = e.target.id.split("-")[2]
     if (target === "1") {
@@ -25,28 +27,114 @@ function Admin() {
   function addParticipantsMenu(e) {
     var target = e.target.id.split("-")[2]
     if (target === "1") {
-      setAddParticipants("1")
+      resetInput()
+      resetInput()
+      setError(errorInitial)
+      setCompressedImageFile(false)
       setCompreseedImage(false)
-      document.getElementById("imageUpload").value = null
+      setAddParticipants("1")
     } else {
+      resetInput()
+      setError(errorInitial)
+      setCompressedImageFile(false)
       setCompreseedImage(false)
       setAddParticipants("2")
+    }
+  }
+  function resetInput() {
+    if (addParticipants == "1") {
       document.getElementById("imageUpload").value = null
+      document.getElementById("registerNumber").value = ""
+      document.getElementById("registerStudentName").value = ""
+      document.getElementById("registerMail").value = ""
+      document.getElementById("registerDOB").value = ""
+      document.getElementById("registerPhoneNumber").value = ""
+      document.getElementById("registerDepartment").value = ""
+      document.getElementById("registerYear").value = ""
+      document.getElementById("registerBatch").value = ""
+    } else {
+      document.getElementById("imageUpload").value = null
+      document.getElementById("registerTeacherName").value = ""
+      document.getElementById("registerID").value = ""
+      document.getElementById("registerPassword").value = ""
+      document.getElementById("registerTeacherMailID").value = ""
+      document.getElementById("registerTeacherDepartment").value = ""
     }
   }
   function studentAdd() {
     var studentDetails = {}
     studentDetails.registerNumber = document.getElementById("registerNumber").value
-    studentDetails.registerName = document.getElementById("registerName").value
+    studentDetails.registerName = document.getElementById("registerStudentName").value
     studentDetails.registerMail = document.getElementById("registerMail").value
     studentDetails.registerDOB = document.getElementById("registerDOB").value
     studentDetails.registerPhoneNumber = document.getElementById("registerPhoneNumber").value
     studentDetails.registerDepartment = document.getElementById("registerDepartment").value
     studentDetails.registerYear = document.getElementById("registerYear").value
     studentDetails.registerBatch = document.getElementById("registerBatch").value
+    studentDetails.type = "student"
+    var date = new Date()
+    studentDetails.registerDate = date.getHours() + "-" + date.getMinutes() + "-" + date.getSeconds() + "-" + date.getFullYear()
+    if (compressedImageFile === false || studentDetails.registerNumber.length === 0 || studentDetails.registerName.length === 0 || studentDetails.registerMail.length === 0 || studentDetails.registerDOB.length === 0 || studentDetails.registerPhoneNumber.length === 0 || studentDetails.registerDepartment.length === 0 || studentDetails.registerYear.length === 0 || studentDetails.registerBatch.length === 0) {
+      setError({ ...error, addParticipants: "All the value should be entered" })
+      return
+    }
+    const data = new FormData()
+    data.append("userDetails", JSON.stringify(studentDetails))
+    data.append("compressedImageFile", compressedImageFile)
+    var token = JSON.parse(localStorage.getItem("UserData"))
+    if (token) {
+      Axios
+        .post("/insert/student", data, {
+          headers: {
+            'Authorization': `token ${token.jwt}`
+          }
+        })
+        .then(res => {
+          if (res.data.error) {
+            setError({ ...error, addParticipants: res.data.error })
+          } else {
+            setError({ ...error, addParticipants: res.data.success })
+          }
+        })
+        .catch(err => console.log(err))
+    } else {
+      window.location = "/admin-login"
+    }
+    //inserting students into database
+
   }
   function teacherAdd() {
-    console.log("yes")
+    var teacherDetails = {}
+    teacherDetails.registerName = document.getElementById("registerTeacherName").value
+    teacherDetails.registerID = document.getElementById("registerID").value
+    teacherDetails.registerPassword = document.getElementById("registerPassword").value
+    teacherDetails.registerDepartment = document.getElementById("registerTeacherDepartment").value
+    teacherDetails.registerMailID = document.getElementById("registerTeacherMailID").value
+    teacherDetails.type = "teacher"
+    var date = new Date()
+    teacherDetails.registerDate = date.getHours() + "-" + date.getMinutes() + "-" + date.getSeconds() + "-" + date.getFullYear()
+    if (compressedImageFile == false || teacherDetails.registerName.length === 0 || teacherDetails.registerID.length === 0 || teacherDetails.registerPassword.length === 0 || teacherDetails.registerDepartment.length === 0) {
+      setError({ ...error, addParticipants: "All the value should be entered" })
+      return
+    }
+    const data = new FormData()
+    data.append("userDetails", JSON.stringify(teacherDetails))
+    data.append("compressedImageFile", compressedImageFile)
+    var token = JSON.parse(localStorage.getItem("UserData"))
+    Axios
+      .post("/insert/teacher", data, {
+        headers: {
+          'Authorization': `token ${token.jwt}`
+        }
+      })
+      .then(res => {
+        if (res.data.error) {
+          setError({ ...error, addParticipants: res.data.error })
+        } else {
+          setError({ ...error, addParticipants: res.data.success })
+        }
+      })
+      .catch(err => console.log(err))
   }
   // function findDate() {
   //   var today = new Date();
@@ -58,17 +146,19 @@ function Admin() {
   // }
   async function compressImage(event) {
     const imageFile = event.target.files[0];
+    console.log(imageFile[0])
     // console.log('originalFile instanceof Blob', imageFile instanceof Blob); // true
     // console.log(`originalFile size ${imageFile.size / 1024 / 1024} MB`);
     const options = {
       maxSizeMB: .100,
-      maxWidthOrHeight: 150,
+      maxWidthOrHeight: 200,
       useWebWorker: true
     }
     try {
       var compressedFile = await imageCompression(imageFile, options);
       console.log(`compressedFile size ${compressedFile.size}`); // smaller than maxSizeMB
       var imageUrl = URL.createObjectURL(compressedFile)
+      setCompressedImageFile(compressedFile)
       setCompreseedImage(imageUrl)
     } catch (error) {
       console.log(error);
@@ -109,6 +199,7 @@ function Admin() {
                     <div className="image-div">
                       <img className="uploaded-image" src={compressedImage ? compressedImage : "./images/profile.png"} alt="imageLogo" />
                       <input type="file" className="upload-file" name="imageUpload" id="imageUpload" accept=".jpg" onChange={compressImage} />
+                      <Error text={error.addParticipants ? error.addParticipants : ""} class="errorText" />
                     </div>
                     <div className="register-lable col col-lg-6 col-md-6 col-sm-6 col-6">
                       <p>Register number :</p>
@@ -120,7 +211,7 @@ function Admin() {
                       <p>Name :</p>
                     </div>
                     <div className="register-input col col-lg-6 col-md-6 col-sm-6 col-6">
-                      <input className="input" type="text" name="registerName" id="registerName" />
+                      <input className="input" type="text" name="registerStudentName" id="registerStudentName" />
                     </div>
                     <div className="register-lable col col-lg-6 col-md-6 col-sm-6 col-6">
                       <p>Mail Id :</p>
@@ -144,13 +235,24 @@ function Admin() {
                       <p>Department :</p>
                     </div>
                     <div className="register-input col col-lg-6 col-md-6 col-sm-6 col-6">
-                      <input className="input" type="text" name="registerDepartment" id="registerDepartment" />
+                      <select id="registerDepartment" className="input">
+                        <option value="CSE" className="option">CSE</option>
+                        <option value="MECHANICAL" className="option">MECHANICAL</option>
+                        <option value="ECE" className="option">ECE</option>
+                        <option value="EEE" className="option">EEE</option>
+                        <option value="CIVIL" className="option">CIVIL</option>
+                      </select>
                     </div>
                     <div className="register-lable col col-lg-6 col-md-6 col-sm-6 col-6">
                       <p>Year :</p>
                     </div>
                     <div className="register-input col col-lg-6 col-md-6 col-sm-6 col-6">
-                      <input className="input" type="number" name="registerYear" id="registerYear" />
+                      <select id="registerYear" className="input">
+                        <option value="First Year" className="option">First Year</option>
+                        <option value="Second Year" className="option">Second Year</option>
+                        <option value="Third Year" className="option">Third Year</option>
+                        <option value="Fourth Year" className="option">Fourth Year</option>
+                      </select>
                     </div>
                     <div className="register-lable col col-lg-6 col-md-6 col-sm-6 col-6">
                       <p>Batch :</p>
@@ -167,18 +269,25 @@ function Admin() {
                     <div className="image-div">
                       <img className="uploaded-image" src={compressedImage ? compressedImage : "./images/profile.png"} alt="imageLogo" />
                       <input type="file" className="upload-file" name="imageUpload" id="imageUpload" accept=".jpg" onChange={compressImage} />
-                    </div>
-                    <div className="register-lable col col-lg-6 col-md-6 col-sm-6 col-6">
-                      <p>Teacher Name :</p>
-                    </div>
-                    <div className="register-input col col-lg-6 col-md-6 col-sm-6 col-6">
-                      <input className="input" type="text" name="registerName" id="registerName" />
+                      <Error text={error.addParticipants ? error.addParticipants : ""} class="errorText" />
                     </div>
                     <div className="register-lable col col-lg-6 col-md-6 col-sm-6 col-6">
                       <p>Teacher Id :</p>
                     </div>
                     <div className="register-input col col-lg-6 col-md-6 col-sm-6 col-6">
                       <input className="input" type="text" name="registerID" id="registerID" />
+                    </div>
+                    <div className="register-lable col col-lg-6 col-md-6 col-sm-6 col-6">
+                      <p>Teacher Name :</p>
+                    </div>
+                    <div className="register-input col col-lg-6 col-md-6 col-sm-6 col-6">
+                      <input className="input" type="text" name="registerTeacherName" id="registerTeacherName" />
+                    </div>
+                    <div className="register-lable col col-lg-6 col-md-6 col-sm-6 col-6">
+                      <p>Teacher MailID :</p>
+                    </div>
+                    <div className="register-input col col-lg-6 col-md-6 col-sm-6 col-6">
+                      <input className="input" type="mail" name="registerTeacherMailID" id="registerTeacherMailID" />
                     </div>
                     <div className="register-lable col col-lg-6 col-md-6 col-sm-6 col-6">
                       <p>Teacher password :</p>
@@ -190,7 +299,13 @@ function Admin() {
                       <p>Deaprtment :</p>
                     </div>
                     <div className="register-input col col-lg-6 col-md-6 col-sm-6 col-6">
-                      <input className="input" type="text" name="registerDepartment" id="registerDepartment" />
+                      <select id="registerTeacherDepartment" className="input">
+                        <option value="CSE" className="option">CSE</option>
+                        <option value="MECHANICAL" className="option">MECHANICAL</option>
+                        <option value="ECE" className="option">ECE</option>
+                        <option value="EEE" className="option">EEE</option>
+                        <option value="CIVIL" className="option">CIVIL</option>
+                      </select>
                     </div>
                     <div onClick={teacherAdd} className="button text-center col col-lg-4 col-md-4 col-sm-4 col-4">
                       <p className="button-submit">Add</p>

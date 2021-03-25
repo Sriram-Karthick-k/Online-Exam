@@ -1,4 +1,4 @@
-//schedulesinfo Schema
+//Admin Schema
 const mongoose=require("./Main.js")
 var Schema = mongoose.Schema;
 var admininfos = new Schema({

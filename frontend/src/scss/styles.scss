@@ -136,7 +136,6 @@ input::selection {
       }
       .menu-item:hover {
         background-color: $primary-color;
-        border-bottom: 1px solid $primary-color;
         color: $white;
       }
       .menu-item-active {
@@ -177,16 +176,17 @@ input::selection {
           .upload-file {
             position: relative;
             left: 50%;
-            margin-bottom: 2rem;
+            margin-bottom: 1rem;
             transform: translate(-30%, 0);
             overflow: hidden;
           }
         }
-        // .errorText {
-        //   color: $red;
-        //   text-align: center;
-        //   margin-bottom: 1.6rem;
-        // }
+        .errorText {
+          display: block;
+          color: $red;
+          text-align: center;
+          margin-bottom: 1.2rem;
+        }
         .register-lable {
           margin-bottom: 1.3rem;
           text-align: right;
@@ -204,11 +204,20 @@ input::selection {
           .input {
             border: none;
             color: $font;
+            width: 100%;
             border-bottom: 2px solid $font;
             background-color: transparent;
             padding-left: 0.3rem;
             caret-color: $font;
+            .option {
+              background-color: $font-place-holder;
+              color: $white;
+            }
+            .option:hover {
+              box-shadow: 0 0 10px 100px #fff inset;
+            }
           }
+
           .input:focus,
           .input:active {
             outline: none;

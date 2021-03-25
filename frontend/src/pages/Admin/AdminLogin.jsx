@@ -1,10 +1,9 @@
-import react, { useEffect, useState } from "react"
+import react, { useState } from "react"
 import Axios from "axios"
 import Input from '../../components/Input'
 import Button from "../../components/Button"
 import Error from "../../components/Error"
 function Admin() {
-  const [page, setPage] = useState("login")
   document.onkeydown = function (e) {
     if ((e.keyCode >= 32 && e.keyCode <= 90) || 40) {
       return true
