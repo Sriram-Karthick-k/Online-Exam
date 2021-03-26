@@ -185,6 +185,30 @@ app.route("/insert/teacher")
     }
   })
 
+
+app.route("/getparticipants")
+  .get(verifyToken,async function(req,res){
+    if(Main.connection.readyState===1){
+      var participants={}
+      var studentParticipants=await StudentInfo.find({},{_id:0,studentRegisterNumber:1,studentBatch:1,studentDepartment:1,studentYear:1}).exec()
+      var teacherParticipants=await TeacherInfo.find({},{_id:0,teacherRegisterName:1,teacherDepartment:1}).exec()
+      var studentBatch=await StudentInfo.distinct("studentBatch").exec()
+      var teacherDepartment=await TeacherInfo.distinct("teacherDepartment").exec()
+      var studentDepartment=await StudentInfo.distinct("studentDepartment").exec()
+      var studentYear =await StudentInfo.distinct("studentYear").exec()
+      participants.students=studentParticipants
+      participants.teachers=teacherParticipants
+      participants.studentBatch=studentBatch
+      participants.studentYear=studentYear
+      participants.teacherDepartment=teacherDepartment
+      participants.studentDepartment=studentDepartment
+      res.send(participants)
+    }else{
+      res.send({error:"The database server is offline"})
+    }
+  })
+  
+
 function verifyToken(req,res,next){
   var token = req.headers.authorization.split(" ")[1]
   try{

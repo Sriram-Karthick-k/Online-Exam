@@ -13,3 +13,58 @@
   transform: translate(-50%, -50%);
   position: absolute;
 }
+.error-text {
+  color: $red;
+  font-weight: bold;
+  text-align: center;
+}
+.loadingContainer {
+  width: 100vw;
+  height: 100%;
+  background-color: $spinner-shadow;
+  position: fixed;
+}
+
+@mixin loading-spinner($selector: "&::before", $time: 1.5s) {
+  @keyframes spinner {
+    0% {
+      transform: translate3d(-50%, -50%, 0) rotate(0deg);
+    }
+
+    100% {
+      transform: translate3d(-50%, -50%, 0) rotate(360deg);
+    }
+  }
+
+  animation-play-state: running;
+  opacity: 1;
+  position: relative;
+
+  &.-paused {
+    animation-play-state: paused;
+    opacity: 0.2;
+    transition: opacity linear 0.1s;
+  }
+
+  #{$selector} {
+    animation: $time linear infinite spinner;
+    animation-play-state: inherit;
+    border: solid 3px $shadow-color;
+    border-bottom-color: $spinner-color;
+    border-radius: 50%;
+    content: "";
+    height: 40px;
+    left: 50%;
+    opacity: inherit;
+    position: absolute;
+    top: 50%;
+    transform: translate3d(-50%, -50%, 0);
+    width: 40px;
+    will-change: transform;
+  }
+}
+
+.loading-spinner {
+  @include loading-spinner;
+  height: 100vh;
+}

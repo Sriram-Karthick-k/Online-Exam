@@ -1,7 +1,8 @@
 import react, { useState } from "react";
 import Axios from "axios";
+import Loading from "../../components/Loading"
 function Protected(props) {
-  const [Auth, setAuth] = useState(true);
+  const [Auth, setAuth] = useState(false);
   var data = JSON.parse(localStorage.getItem("UserData"));
   if (data) {
     Axios.get("/Auth?token=" + data.jwt)
@@ -17,7 +18,8 @@ function Protected(props) {
   } else {
     window.location = "/admin-login";
   }
-  var dump = 1;
-  return Auth ? <props.component /> : (dump = "");
+  console.log(Auth)
+  return Auth ? <props.component /> : <Loading />
+
 }
 export default Protected;

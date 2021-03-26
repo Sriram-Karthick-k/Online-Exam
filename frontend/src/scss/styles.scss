@@ -1,10 +1,19 @@
 @import "./styles-modules/variables";
 @import "./styles-modules/reset";
 @import "./styles-modules/basics.scss";
+@import "./styles-modules/animations.scss";
 @import url("https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;700&display=swap");
 body {
   background-color: $background-color;
   font-family: "Source Sans Pro", sans-serif;
+}
+body::-webkit-scrollbar {
+  background-color: $white !important;
+  width: 10px !important;
+}
+body::-webkit-scrollbar-thumb {
+  background-color: $font;
+  border-radius: 5px;
 }
 input::selection {
   color: $white;
@@ -245,8 +254,132 @@ input::selection {
         }
       }
     }
+    .viewParticipants {
+      padding: 2rem;
+      .total-wrapper {
+        margin-left: 1rem;
+        width: 100%;
+        color: $font;
+        .batch-container {
+          .batch-holder {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.4rem;
+            width: 100%;
+            border-radius: 0.5rem;
+            margin-bottom: 0.1rem;
+            background-color: $font;
+            .batch-text {
+              color: $white;
+              font-size: 1.6rem;
+            }
+            .batch-plus-img {
+              height: 40px;
+              width: 40px;
+              transition: all 0.4s;
+            }
+            .batch-plus-img-rotate {
+              -webkit-transform: rotate(45deg);
+            }
+          }
+          .department-container {
+            padding: 0 1.5rem;
+            .department-holder {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              padding: 0.2rem;
+              width: 100%;
+              border-radius: 0.5rem;
+              margin-bottom: 0.1rem;
+              background-color: $font;
+              .department-text {
+                color: $white;
+                font-size: 1.4rem;
+              }
+              .department-plus-img {
+                height: 35px;
+                width: 35px;
+                transition: all 0.4s;
+              }
+              .department-plus-img-rotate {
+                -webkit-transform: rotate(45deg);
+              }
+            }
+            .year-container {
+              padding: 0 1rem;
+              .year-holder {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0.2rem;
+                width: 100%;
+                border-radius: 0.5rem;
+                margin-bottom: 0.1rem;
+                background-color: $font;
+              }
+              .year-text {
+                color: $white;
+                font-size: 1.2rem;
+              }
+              .year-plus-img {
+                height: 30px;
+                width: 30px;
+                transition: all 0.4s;
+              }
+              .year-plus-img-rotate {
+                -webkit-transform: rotate(45deg);
+              }
+              .student-wrapper {
+                overflow-y: auto;
+                max-height: 350px;
+                margin-bottom: 0.5rem;
+                .student-container {
+                  padding: 0 1rem;
+                  font-weight: bold;
+                  text-align: center;
+                  margin-bottom: 0.1rem;
+                  .student-holder {
+                    border-radius: 0.5rem;
+                    background-color: $font;
+                    width: 100%;
+                    margin-bottom: 0.1rem;
+                    .student-text {
+                      font-size: 1.4rem;
+                      color: $white;
+                    }
+                  }
+                  .student-holder:hover {
+                    background-color: $primary-color;
+                  }
+                }
+              }
+              .student-wrapper::-webkit-scrollbar {
+                background-color: $white !important;
+                width: 10px !important;
+              }
+              .student-wrapper::-webkit-scrollbar-thumb {
+                background-color: $font;
+                border-radius: 5px;
+              }
+              .student-container-none {
+                display: none;
+              }
+            }
+            .year-container-none {
+              display: none;
+            }
+          }
+          .department-container-none {
+            display: none;
+          }
+        }
+      }
+    }
   }
 }
+
 @media (max-width: 750px) {
   .admin {
     .admin-index {
@@ -286,8 +419,6 @@ input::selection {
       .addParticipants {
         .menu {
           margin: 0 10rem;
-          .menu-item {
-          }
         }
         .register {
           margin: 0 18rem;
@@ -295,6 +426,19 @@ input::selection {
           .image-div {
             .upload-file {
               transform: translate(-20%, 0);
+            }
+          }
+        }
+      }
+      .viewParticipants {
+        .total-wrapper {
+          .batch-container {
+            padding: 0 12rem;
+            .department-container {
+              padding: 0 7rem;
+              .year-container {
+                padding: 0 2.5rem;
+              }
             }
           }
         }

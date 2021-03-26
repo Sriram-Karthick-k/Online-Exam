@@ -3,7 +3,9 @@ import Axios from "axios"
 import Input from '../../components/Input'
 import Button from "../../components/Button"
 import Error from "../../components/Error"
+import Loading from "../../components/Loading"
 function Admin() {
+  const [spinner, setSpinner] = useState(false)
   document.onkeydown = function (e) {
     if ((e.keyCode >= 32 && e.keyCode <= 90) || 40) {
       return true
@@ -16,12 +18,14 @@ function Admin() {
   const [error, setError] = useState(" ")
   function logIn(e) {
     e.preventDefault()
+    setSpinner(true)
     var userName = document.getElementById("userName").value
     var password = document.getElementById("password").value
     Axios
       .post("/admin-login", { userName: userName, password: password })
       .then(res => {
         if (res.data.error) {
+          setSpinner(false)
           setError(res.data.error)
         } else {
           setError(" ")
@@ -40,6 +44,9 @@ function Admin() {
           <Input id="password" for="password" lableText="Password" class="form-input form__field" placeholder="Password" name="password" type="password" autofocus="false" />
           <Button text="Login" class="btn" onclick={logIn} />
         </form>
+        {
+          spinner ? <Loading></Loading> : ""
+        }
       </div>
     </div>
   )
