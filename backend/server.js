@@ -40,33 +40,57 @@ app.use(express.static(__dirname+"/source"))
 
 var storage = multer.diskStorage({
   destination: async function (req, file, cb) {
-    var details=JSON.parse(req.body.userDetails)
-    if(details.type==="student"){
-      var path=String("source/images/"+details.type+"/"+details.registerBatch+"/"+details.registerDepartment+"/"+details.registerYear)
-      if(fs.existsSync(path)){
+    if(req.body.page){
+      var details=JSON.parse(req.body.participant)
+      var type=JSON.parse(req.body.type)
+      var path="source"
+      var imagePath=details.imagePath.split("/").splice(0,details.imagePath.split("/").length-1)
+      imagePath.map(elem=>{
+        path+="/"+elem
+      })
+      if(type==="student"){
+        removeFile("source"+details.imagePath)
         cb(null,path)
       }else{
-        fs.mkdirSync(path,{recursive:true})
+        removeFile("source"+details.imagePath)
         cb(null,path)
       }
     }else{
-      var path=String("source/images/"+details.type+"/"+details.registerDepartment)
-      if(fs.existsSync(path)){
-        cb(null,path)
+      var details=JSON.parse(req.body.userDetails)
+      if(details.type==="student"){
+        var path=String("source/images/"+details.type+"/"+details.registerBatch+"/"+details.registerDepartment+"/"+details.registerYear)
+        if(fs.existsSync(path)){
+          cb(null,path)
+        }else{
+          fs.mkdirSync(path,{recursive:true})
+          cb(null,path)
+        }
       }else{
-        fs.mkdirSync(path,{recursive:true})
-        cb(null,path)
+        var path=String("source/images/"+details.type+"/"+details.registerDepartment)
+        if(fs.existsSync(path)){
+          cb(null,path)
+        }else{
+          fs.mkdirSync(path,{recursive:true})
+          cb(null,path)
+        }
       }
     }
+   
   },
   filename: function (req, file, cb) {
-    var details=JSON.parse(req.body.userDetails)
-    if(details.registerNumber){
-      var fileName=details.registerNumber+"-"+details.registerDate
-      cb(null,fileName)
+    if(req.body.page){
+      var details=JSON.parse(req.body.participant)
+      var fileName=details.imagePath.split("/")
+      cb(null,fileName[fileName.length-1])
     }else{
-      var fileName=details.registerID+"-"+details.registerDate
-      cb(null,fileName)
+      var details=JSON.parse(req.body.userDetails)
+      if(details.registerNumber){
+        var fileName=details.registerNumber+"-"+details.registerDate
+        cb(null,fileName)
+      }else{
+        var fileName=details.registerID+"-"+details.registerDate
+        cb(null,fileName)
+      }
     }
   }
 })
@@ -162,11 +186,12 @@ app.route("/insert/teacher")
     }else{
       var check=await TeacherInfo.findOne({teacherRegisterID:details.registerID}).exec()
       if(!check){
-        bcrypt.hash(req.body.registerPassword,10,function(err,hasedPassword){
+        bcrypt.hash(details.registerPassword,10,function(err,hasedPassword){
+          var password=hasedPassword
           var create= new TeacherInfo({
             teacherRegisterName:details.registerName,
             teacherRegisterID:details.registerID,
-            teacherRegisterPassword:hasedPassword,
+            teacherRegisterPassword:password,
             teacherDepartment:details.registerDepartment,
             teacherMailID:details.registerMailID,
             imagePath:path
@@ -191,7 +216,7 @@ app.route("/getparticipants")
     if(Main.connection.readyState===1){
       var participants={}
       var studentParticipants=await StudentInfo.find({},{_id:0,studentRegisterNumber:1,studentBatch:1,studentDepartment:1,studentYear:1}).exec()
-      var teacherParticipants=await TeacherInfo.find({},{_id:0,teacherRegisterName:1,teacherDepartment:1}).exec()
+      var teacherParticipants=await TeacherInfo.find({},{_id:0,teacherRegisterID:1,teacherDepartment:1}).exec()
       var studentBatch=await StudentInfo.distinct("studentBatch").exec()
       var teacherDepartment=await TeacherInfo.distinct("teacherDepartment").exec()
       var studentDepartment=await StudentInfo.distinct("studentDepartment").exec()
@@ -208,7 +233,57 @@ app.route("/getparticipants")
     }
   })
   
+app.route("/getParticipantDetails")
+  .get(verifyToken,async function(req,res){
+    if(Main.connection.readyState===1){
+      var details=null
+      if(req.query.type=="student"){
+        details=await StudentInfo.findOne({studentRegisterNumber:req.query.find},{_id:0}).exec().catch(err=>console.log(err))
+      }else{
+        details=await TeacherInfo.findOne({teacherRegisterID:req.query.find},{_id:0,teacherRegisterPassword:0}).exec().catch(err=>console.log(err))
+      }
+     var path= details.imagePath.split("/").splice(1,details.imagePath.split("/").length) 
+     var sendPath=""
+     path.map(elem=>{
+      sendPath+="/"+elem
+     }) 
+     details.imagePath=sendPath
+     if(details){
+        res.send(details)
+      }else{
+        res.send({error:"invalid details"})
+      }
+    }else{
+      res.send({error:"The database server is offline"})
+    }
+  })
 
+app.post("/deleteparticipant",verifyToken,async function(req,res){
+  if(Main.connection.readyState===1){
+    var details=null
+    if(req.body.type==="teacher"){
+      details=await TeacherInfo.findOneAndRemove({teacherRegisterID:req.body.participant.teacherRegisterID}).exec().catch(err=>{console.log(err)})
+      removeFile("source/"+req.body.participant.imagePath)
+    }else{
+      details=await StudentInfo.findOneAndRemove({studentRegisterNumber:req.body.participant.studentRegisterNumber}).exec().catch(err=>{console.log(err);})
+      removeFile("source/"+req.body.participant.imagePath)
+    }
+    if(details._id){
+      res.send({success:"The participant is successfully deleted."})
+    }else{
+      res.send({error:"The participant is not deleted."})
+    }
+  }else{
+    res.send({error:"The database server is offline"})
+  }
+})
+app.post("/updateimage",verifyToken,uploads.single("file"),async function(req,res){
+  if(Main.connection.readyState===1){
+    res.send({success:"The file is updated"})
+  }else{
+    res.send({error:"The database server is offline"})
+  }
+})
 function verifyToken(req,res,next){
   var token = req.headers.authorization.split(" ")[1]
   try{
@@ -221,7 +296,6 @@ function verifyToken(req,res,next){
   }else{
     res.send({error:"not valid jwt"})
   }
-  
 }
 function removeFile(path){
   fs.unlinkSync(path)

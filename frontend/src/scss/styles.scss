@@ -256,6 +256,12 @@ input::selection {
     }
     .viewParticipants {
       padding: 2rem;
+      .error-view-participants {
+        margin-bottom: 1rem;
+      }
+      .menu {
+        margin-bottom: 2rem;
+      }
       .total-wrapper {
         margin-left: 1rem;
         width: 100%;
@@ -344,6 +350,7 @@ input::selection {
                     border-radius: 0.5rem;
                     background-color: $font;
                     width: 100%;
+                    transition: all 0.4s;
                     margin-bottom: 0.1rem;
                     .student-text {
                       font-size: 1.4rem;
@@ -363,9 +370,9 @@ input::selection {
                 background-color: $font;
                 border-radius: 5px;
               }
-              .student-container-none {
-                display: none;
-              }
+            }
+            .student-wrapper-none {
+              display: none;
             }
             .year-container-none {
               display: none;
@@ -373,6 +380,149 @@ input::selection {
           }
           .department-container-none {
             display: none;
+          }
+        }
+        .teacher-department-container {
+          .teacher-department-holder {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.4rem;
+            width: 100%;
+            border-radius: 0.5rem;
+            margin-bottom: 0.1rem;
+            background-color: $font;
+            .teacher-department-text {
+              color: $white;
+              font-size: 1.6rem;
+            }
+            .teacher-department-plus-img {
+              height: 40px;
+              width: 40px;
+              transition: all 0.4s;
+            }
+            .teacher-department-plus-img-rotate {
+              -webkit-transform: rotate(45deg);
+            }
+          }
+          .teacher-wrapper {
+            overflow-y: auto;
+            max-height: 350px;
+            margin-bottom: 0.5rem;
+            .teacher-container {
+              padding: 0 2rem;
+              font-weight: bold;
+              text-align: center;
+              margin-bottom: 0.1rem;
+              .teacher-holder {
+                border-radius: 0.5rem;
+                background-color: $font;
+                width: 100%;
+                margin-bottom: 0.1rem;
+                transition: all 0.4s;
+                .teacher-text {
+                  font-size: 1.4rem;
+                  color: $white;
+                }
+              }
+              .teacher-holder:hover {
+                background-color: $primary-color;
+              }
+            }
+          }
+          .teacher-wrapper-none {
+            display: none;
+          }
+          .teacher-wrapper::-webkit-scrollbar {
+            background-color: $white !important;
+            width: 10px !important;
+          }
+          .teacher-wrapper::-webkit-scrollbar-thumb {
+            background-color: $font;
+            border-radius: 5px;
+          }
+        }
+      }
+      .participant-background {
+        background-color: $spinner-shadow;
+        position: fixed;
+        z-index: 100;
+        height: 100vh;
+        width: 100vw;
+        .participant-container {
+          padding: 1rem;
+          border-radius: 0.9rem;
+          max-width: 400px;
+          background-color: $background-color;
+          .close-button {
+            display: block;
+            float: right;
+            color: $font;
+          }
+          .participant-details {
+            font: $font;
+            display: block;
+            margin-top: 1rem;
+            .participant-content {
+              overflow: hidden;
+              display: flex;
+              width: 100%;
+              padding: 1rem;
+              flex-direction: column;
+              align-items: center;
+              .image-div {
+                overflow: hidden;
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                .participant-image {
+                  max-width: 100px;
+                  height: 100px;
+                  max-height: 150px !important;
+                  margin: auto;
+                  background-color: $font;
+                  margin-bottom: 1.3rem;
+                }
+                .participant-file {
+                  position: relative;
+                  left: 50%;
+                  margin-bottom: 1rem;
+                  margin-left: 2rem;
+                  transform: translate(-30%, 0);
+                  overflow: hidden;
+                }
+              }
+              .lable-container {
+                color: $font;
+                font-size: 1rem;
+                overflow: hidden;
+                padding: 0.5rem;
+                margin-bottom: 0.5rem;
+                .show-participant-lable {
+                  align-items: center;
+                  .lable-text {
+                    text-align: right;
+                  }
+                }
+              }
+              .button-wrapper {
+                display: flex;
+                flex-direction: row;
+                justify-content: center;
+                .button {
+                  padding: 0.8rem;
+                  border-radius: 0.5rem;
+                  border: 2px solid $font;
+                  margin: 0.3rem;
+                  transition: all 0.4s;
+                }
+                .button:hover {
+                  color: $white;
+                  background-color: $font;
+                }
+              }
+            }
           }
         }
       }
@@ -431,14 +581,22 @@ input::selection {
         }
       }
       .viewParticipants {
+        padding: 0 6rem;
         .total-wrapper {
           .batch-container {
             padding: 0 12rem;
             .department-container {
-              padding: 0 7rem;
+              padding: 0 5rem;
               .year-container {
-                padding: 0 2.5rem;
+                overflow: hidden;
+                padding: 0 3rem;
               }
+            }
+          }
+          .teacher-department-container {
+            padding: 0 12rem;
+            .teacher-wrapper {
+              padding: 0 5rem;
             }
           }
         }
