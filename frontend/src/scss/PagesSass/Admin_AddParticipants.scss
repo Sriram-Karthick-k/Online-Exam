@@ -1,0 +1,147 @@
+.admin {
+  .admin-index {
+    border: 1px solid $shadow-color;
+    box-shadow: 5px 10px 15px $shadow-color;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    // add-participants
+    .addParticipants {
+      padding: 2rem;
+      .menu {
+        border-bottom: 2px solid $font;
+        .menu-item-active {
+          border-bottom: 1.5px solid $primary-color;
+          background-color: $font;
+        }
+        .menu-item:hover {
+          background-color: $font;
+        }
+      }
+      .register {
+        overflow: hidden;
+        color: $font;
+        margin-top: 2rem;
+        .image-div {
+          width: 100%;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          .uploaded-image {
+            max-width: 100px;
+            height: 100px;
+            max-height: 150px !important;
+            margin: auto;
+            background-color: $font;
+            margin-bottom: 1.3rem;
+          }
+          .upload-file {
+            position: relative;
+            left: 50%;
+            margin-bottom: 1rem;
+            transform: translate(-30%, 0);
+            overflow: hidden;
+          }
+        }
+        .errorText {
+          display: block;
+          color: $red;
+          text-align: center;
+          margin-bottom: 1.2rem;
+        }
+        .register-lable {
+          margin-bottom: 1.3rem;
+          text-align: right;
+          padding: 0;
+          padding-top: 0.4rem;
+          padding-right: 0.5rem;
+        }
+        .register-input {
+          margin-bottom: 1.3rem;
+          padding: 0;
+          font-size: 1.2rem;
+          input {
+            width: 100%;
+          }
+          .input {
+            border: none;
+            color: $font;
+            width: 100%;
+            border-bottom: 2px solid $font;
+            background-color: transparent;
+            padding-left: 0.3rem;
+            caret-color: $font;
+            .option {
+              background-color: $font-place-holder;
+              color: $white;
+            }
+            .option:hover {
+              box-shadow: 0 0 10px 100px #fff inset;
+            }
+          }
+
+          .input:focus,
+          .input:active {
+            outline: none;
+          }
+        }
+        .button {
+          position: relative;
+          left: 50%;
+          transform: translate(-50%, 0);
+          .button-submit {
+            flex: 0 1 auto;
+            background-color: transparent;
+            padding: 1rem;
+            border: 2px solid $font;
+            border-radius: 0.6rem;
+          }
+          .button-submit:hover {
+            background-color: $font;
+            color: $white;
+          }
+          .button-submit:focus,
+          .button-submit:active {
+            box-shadow: none;
+          }
+        }
+      }
+    }
+  }
+}
+@media (min-width: 990px) {
+  .admin {
+    .admin-index {
+      .addParticipants {
+        .menu {
+          margin: 0 10rem;
+        }
+        .register {
+          margin: 0 18rem;
+          margin-top: 2rem;
+          .image-div {
+            .upload-file {
+              transform: translate(-20%, 0);
+            }
+          }
+        }
+      }
+    }
+  }
+}
+@media (max-width: 990px) {
+  .admin {
+    .admin-index {
+      .addParticipants {
+        .register {
+          .image-div {
+            .upload-file {
+              transform: translate(-20%, 0);
+            }
+          }
+        }
+      }
+    }
+  }
+}

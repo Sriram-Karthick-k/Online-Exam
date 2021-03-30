@@ -5,9 +5,10 @@ import Axios from "axios";
 import Loading from "../../components/Loading"
 import AddParticipants from "./AddParticipants"
 import ViewParticipants from "./ViewParticipants";
+import CreateTest from "./CreateText"
 function Admin() {
   const [spinner, setSpinner] = useState(false)
-  const menuInitial = "2"
+  const menuInitial = "3"
   const [menu, setMenu] = useState(menuInitial)
   function changeMenu(e) {
     var target = e.target.id.split("-")[2]
@@ -53,11 +54,7 @@ function Admin() {
             : menu === "2" ?
               <ViewParticipants />
               : menu === "3" ?
-                <div className="createTest">
-                  <div className="row">
-
-                  </div>
-                </div>
+                <CreateTest />
                 :
                 <div className="viewSaved">
                   <div className="row">

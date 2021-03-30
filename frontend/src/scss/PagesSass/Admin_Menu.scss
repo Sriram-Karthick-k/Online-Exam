@@ -1,0 +1,65 @@
+.admin {
+  .admin-index {
+    border: 1px solid $shadow-color;
+    box-shadow: 5px 10px 15px $shadow-color;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    .menu {
+      margin: 0 0.5rem;
+      border-bottom: 2px solid $primary-color;
+      .menu-item {
+        cursor: pointer;
+        padding: 0.6rem;
+        font-size: 1.2rem;
+        border-top-left-radius: 0.6rem;
+        border-top-right-radius: 0.6rem;
+        transition: all 0.4s;
+      }
+      .menu-item:hover {
+        background-color: $primary-color;
+        color: $white;
+      }
+      .menu-item-active {
+        background-color: $primary-color;
+        color: $white;
+        border-bottom: 1px solid $primary-color;
+      }
+    }
+  }
+}
+@media (max-width: 750px) {
+  .admin {
+    .admin-index {
+      .menu {
+        .menu-item {
+          font-size: 1rem;
+        }
+      }
+    }
+  }
+}
+@media (max-width: 450px) {
+  .admin {
+    .admin-index {
+      .menu {
+        .menu-item {
+          font-size: 0.9rem;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 375px) {
+  .admin {
+    .admin-index {
+      .menu {
+        .menu-item {
+          font-size: 0.6rem;
+        }
+      }
+    }
+  }
+}

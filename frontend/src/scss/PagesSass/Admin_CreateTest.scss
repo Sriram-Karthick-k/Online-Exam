@@ -1,0 +1,189 @@
+.admin {
+  //admin index page
+  .admin-index {
+    border: 1px solid $shadow-color;
+    box-shadow: 5px 10px 15px $shadow-color;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    .create {
+      padding: 2rem;
+      .create-error-text {
+        margin-bottom: 1rem;
+        text-align: center;
+        margin-top: 1rem;
+        color: $red;
+      }
+      .create-test {
+        margin-top: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        .question-label-container {
+          padding: 0 1rem;
+          text-align: center;
+          color: $font;
+          margin-bottom: 1.5rem;
+        }
+        .question-input-container {
+          padding: 0 1rem;
+          margin-bottom: 1.5rem;
+          .input {
+            background-color: transparent;
+            outline: none;
+            border: none;
+            border-bottom: 2px solid $font;
+            color: $font;
+            width: 100%;
+            .opt {
+              background-color: $font;
+              color: $white;
+            }
+          }
+          .input:focus,
+          .input:active {
+            outline: none;
+          }
+          .button {
+            color: $font;
+            border: none;
+            width: 100%;
+            font-size: 1.2rem;
+            border: 2px solid $font;
+            border-radius: 0.5rem;
+            padding: 0.8rem;
+            background-color: transparent;
+            transform: all 0.4s;
+          }
+          .button:hover {
+            background-color: $font;
+            color: $white;
+          }
+          .button:focus,
+          .button:active {
+            border: 2px solid $font;
+            box-shadow: none;
+            outline: none;
+          }
+        }
+        .total-question-wrapper {
+          margin-bottom: 1.5rem;
+          display: flex;
+          align-items: center;
+          flex-direction: column;
+          .question-label {
+            text-align: center;
+            color: $font;
+            margin-bottom: 1rem;
+            text-decoration: underline;
+          }
+          .question-wrapper {
+            padding: 1rem;
+            max-height: 400px;
+            overflow-y: scroll;
+            margin-bottom: 1rem;
+            border: 1px solid $font;
+            .question-container {
+              width: 100%;
+              padding: 0;
+              margin: 0;
+              display: flex;
+              align-items: center;
+              .questionNumber {
+                color: $font;
+                margin-right: 0.3rem;
+                padding-bottom: 0.5rem;
+              }
+              .question {
+                margin-bottom: 0.4rem;
+                padding: 0;
+                .input {
+                  box-shadow: none;
+                  font-size: 1.3rem;
+                  padding: 0.4rem;
+                  width: 100%;
+                  outline: none;
+                  color: $font;
+                  border: 1px solid $font;
+                  background-color: transparent;
+                  caret-color: $font;
+                  border-radius: 0.4rem;
+                }
+                .input:focus,
+                .input:active {
+                  box-shadow: none;
+                  border: none;
+                  outline: none;
+                  border: 1px solid $font;
+                }
+              }
+              .option {
+                margin-bottom: 0.4rem;
+                padding: 0 0.3rem;
+                .input {
+                  font-size: 1.3rem;
+                  padding: 0.4rem;
+                  width: 100%;
+                  border: none;
+                  outline: none;
+                  color: $font;
+                  caret-color: $font;
+                  border: 1px solid $font;
+                  background-color: transparent;
+                  border-radius: 0.4rem;
+                }
+                .input:focus,
+                .input:active {
+                  box-shadow: none;
+                  border: none;
+                  outline: none;
+                  border: 1px solid $font;
+                }
+                .opt {
+                  background-color: $font;
+                  color: $white;
+                }
+              }
+              .label-container {
+                text-align: right;
+                color: $font;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+              }
+            }
+          }
+          .question-wrapper::-webkit-scrollbar {
+            background-color: $background-color !important;
+            width: 10px !important;
+          }
+          .question-wrapper::-webkit-scrollbar-thumb {
+            background-color: $font;
+            border-radius: 5px;
+          }
+        }
+      }
+    }
+  }
+}
+@media (min-width: 765px) {
+  .admin {
+    .admin-index {
+      .create {
+        .create-test {
+          padding: 0 7rem;
+        }
+      }
+    }
+  }
+}
+@media (min-width: 1200px) {
+  .admin {
+    .admin-index {
+      .create {
+        padding: 0 6rem;
+      }
+    }
+  }
+}

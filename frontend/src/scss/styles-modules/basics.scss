@@ -1,9 +1,27 @@
+body {
+  background-color: $background-color;
+  font-family: "Source Sans Pro", sans-serif;
+}
+body::-webkit-scrollbar {
+  background-color: $white !important;
+  width: 10px !important;
+}
+body::-webkit-scrollbar-thumb {
+  background-color: $font;
+  border-radius: 5px;
+}
+input::selection {
+  color: $white;
+  background-color: $primary-color;
+}
+
 .copy-text {
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
 }
+
 .text-center {
   text-align: center;
 }

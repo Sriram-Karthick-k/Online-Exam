@@ -12,11 +12,15 @@ const socket = require("socket.io");
 const io = socket(server);
 const cors = require('cors');
 const jwt=require("jsonwebtoken")
+const uuid=require("uuid")
 //mongodb imports
 const Main = require("./mongodb/Main")
 const AdminInfo=require("./mongodb/Admin")
 const StudentInfo=require("./mongodb/StudentInfo"); 
 const TeacherInfo=require("./mongodb/TeacherInfo")
+const ExamInfo=require("./mongodb/ExamInfo")
+const AttendenceInfo=require("./mongodb/AttendenceInfo")
+const RoomInfo=require("./mongodb/RoomInfo")
 
 //socket config
 
@@ -109,7 +113,7 @@ app.route("/admin-login")
         var userDetails=await AdminInfo.findOne({userName:req.body.userName}).exec()
         if(userDetails){
         if( await bcrypt.compare(req.body.password,userDetails.password)){
-          var token=jwt.sign({id:userDetails._id},process.env.JWT_SECRET, { expiresIn: '1h' })
+          var token=jwt.sign({id:userDetails._id},process.env.JWT_SECRET, { expiresIn: '5h' })
           res.send({user:userDetails.userName,jwt:token})
         }else{
           res.send({error:"Password is invalid."})
@@ -284,6 +288,95 @@ app.post("/updateimage",verifyToken,uploads.single("file"),async function(req,re
     res.send({error:"The database server is offline"})
   }
 })
+
+app.get("/getParticipantsYearDepartmentBatch",verifyToken,async function(req,res){
+  if(Main.connection.readyState===1){
+    var studentBatch=await StudentInfo.distinct("studentBatch").exec()
+    var studentDepartment=await StudentInfo.distinct("studentDepartment").exec()
+    var studentYear =await StudentInfo.distinct("studentYear").exec()
+    res.send({batch:studentBatch,department:studentDepartment,year:studentYear})
+}else{
+    res.send({error:"The database server is offline."})
+  }
+})
+
+app.post("/create-test",verifyToken, async function(req,res){
+  if(Main.connection.readyState===1){
+    var examName=req.body.date+"-"+req.body.batch+"-"+req.body.department+"-"+req.body.year
+    var registerNumber=await StudentInfo.find({studentBatch:req.body.batch,studentDepartment:req.body.department,studentYear:req.body.year},{_id:0,studentRegisterNumber:1}).exec()
+    var teacherId=await TeacherInfo.find({},{_id:0,teacherRegisterID:1}).exec()
+    var registerNumbersArray=[]
+    for(var i =0;i<registerNumber.length;i++){
+      registerNumbersArray.push(registerNumber[i].studentRegisterNumber)
+      registerNumber[i]={
+        registerNumber:registerNumber[i].studentRegisterNumber,
+        attendence:false
+      }
+    }
+    var studentLength=registerNumber.length
+    while(studentLength!=0){
+      var roomId=uuid.v1()
+      var randomIndex=null
+      var randomChecked=[]
+      while(randomIndex===null){
+        if(randomChecked>=teacherId.length){
+          break
+        }else{
+          var random=null
+          while(random===null){
+            var randomNumber=Math.floor(Math.random()*teacherId.length)
+            if(randomChecked.indexOf(randomNumber)==-1){
+              random=randomNumber
+            }
+          }
+          var teacherIsAvailable=await RoomInfo.find({teacherId:teacherId[random].teacherRegisterID,examName:{$regex:req.body.date+"-"}}).exec()
+          if(teacherIsAvailable.length===1){
+            randomChecked.push(random)
+          }else{
+            randomIndex=random
+            break
+          }
+        }
+      }
+      if(randomIndex==null){
+        res.send({error:"No teacher is available at that time"})
+        return
+      }
+      if(studentLength>=20){
+        var roomCreate=new RoomInfo({
+          examName:examName,
+          registerNumber:registerNumbersArray.splice(0,20),
+          roomNumber:roomId,
+          teacherId:teacherId[randomIndex].teacherRegisterID
+        })
+        studentLength=studentLength-20
+      }else{
+        var roomCreate=new RoomInfo({
+          examName:examName,
+          registerNumber:registerNumbersArray.splice(0,studentLength),
+          roomNumber:roomId,
+          teacherId:teacherId[randomIndex].teacherRegisterID
+        })
+        studentLength=0
+      }
+      roomCreate.save()
+    }
+
+    var examCreate=new ExamInfo(req.body)
+    var attendenceCreate=new AttendenceInfo({
+      examName:examName,
+      attendence:registerNumber
+    })
+    
+    examCreate.save()
+    attendenceCreate.save()
+    res.send({success:"The test has been created successfully."})
+  }else{
+    res.send({error:"The database server is offline."})
+  }
+})
+
+
 function verifyToken(req,res,next){
   var token = req.headers.authorization.split(" ")[1]
   try{
