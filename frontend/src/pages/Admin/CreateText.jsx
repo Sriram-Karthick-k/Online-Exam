@@ -1,12 +1,16 @@
 import react, { useState, useEffect } from "react"
 import Error from "../../components/Error"
 import Axios from "axios"
+import Loading from "../../components/Loading"
 function CreateText() {
-  const errorInitital = { database: false, oneMark: false, twoMark: false }
+  const [spinner, setSpinner] = useState(false)
+  const errorInitital = { database: false, oneMark: false, twoMark: false, showDetails: false }
   const [error, setError] = useState(errorInitital)
   const [createTest, setcreateTest] = useState("1")
   const [details, setDetails] = useState(false)
   const [testDetails, setTestDetails] = useState(false)
+  const [examDetails, setExamDetails] = useState(false)
+  const [showExamDetails, setShowExamDetails] = useState(false)
   useEffect(() => {
     var token = JSON.parse(localStorage.getItem("UserData"))
     Axios
@@ -30,14 +34,31 @@ function CreateText() {
     if (id === "1") {
       setcreateTest("1")
       setTestDetails(false)
-      setDetails(false)
       setError(errorInitital)
     } else {
       setcreateTest("2")
+      getExamDetails()
       setTestDetails(false)
-      setDetails(false)
       setError(errorInitital)
     }
+  }
+  function getExamDetails() {
+    setSpinner(true)
+    var token = JSON.parse(localStorage.getItem("UserData"))
+    Axios
+      .get("/getExamDetails", {
+        headers: {
+          'Authorization': `token ${token.jwt}`
+        }
+      })
+      .then(res => {
+        if (res.data.error) {
+          setError({ ...error, database: res.data.error })
+        } else {
+          setExamDetails(res.data)
+          setSpinner(false)
+        }
+      })
   }
   function createInput() {
     var testInfo = {}
@@ -174,6 +195,56 @@ function CreateText() {
         }
       })
       .catch(err => console.log(err))
+  }
+  function displayExamQuestions(e) {
+    setSpinner(true)
+    var elem = e.target.id.split("-")
+    var batch = elem[0]
+    var department = elem[1]
+    var year = elem[2]
+    var subjectName = elem[3]
+    var date = elem[4] + "-" + elem[5] + "-" + elem[6]
+    var fromTime = elem[7]
+    var toTime = elem[8]
+    var index = null
+    for (var i = 0; i < examDetails.length; i++) {
+      if (batch === examDetails[i].batch && department === examDetails[i].department && year === examDetails[i].year
+        && subjectName === examDetails[i].subjectName && date === examDetails[i].date && fromTime === examDetails[i].fromTime
+        && toTime === examDetails[i].toTime) {
+        index = i
+        break
+      }
+    }
+    setShowExamDetails(examDetails[index])
+    setSpinner(false)
+  }
+  function deleteExam() {
+    setSpinner(true)
+    var token = JSON.parse(localStorage.getItem("UserData"))
+    Axios
+      .post("/deleteExam", showExamDetails, {
+        headers: {
+          'Authorization': `token ${token.jwt}`
+        }
+      })
+      .then(res => {
+        if (res.data.error) {
+          setError(errorInitital)
+          setError({ ...error, showDetails: res.data.error })
+          return
+        }
+        setError(errorInitital)
+        getExamDetails()
+        setError({ ...error, database: res.data.success })
+        setShowExamDetails(false)
+        setSpinner(false)
+      })
+  }
+  function closeShowExamDetails(e) {
+    if (e.target.id.split("-")[0] === "close") {
+      setShowExamDetails(false)
+      setSpinner(false)
+    }
   }
   return (
     <div className="create">
@@ -382,7 +453,137 @@ function CreateText() {
 
           </div>
           :
-          <h1>editTest</h1>
+
+          examDetails ?
+            <div className="exam-wrapper row">
+              <div className="tag">
+                <h3>Completed Exam</h3>
+              </div>
+              {examDetails.map((elem, index) => {
+                var data = new Date()
+                var date = data.toISOString().split("T")[0]
+                var time = data.getHours() + ":" + data.getMinutes()
+                if (date.localeCompare(elem.date) !== 1)
+                  if (time.localeCompare(elem.toTime) !== -1) {
+                    return (
+                      <div className="exam-container col-lg-12 col-sm-12 col-md-12 col-12" onClick={displayExamQuestions} id={elem.batch + "-" + elem.department + "-" + elem.year + "-" + elem.subjectName + "-" + elem.date + "-" + elem.fromTime + "-" + elem.toTime + "-examContainer"} key={elem.batch + "-" + elem.department + "-" + elem.year + "-" + elem.subjectName + "-" + elem.date + "-" + elem.fromTime + "-" + elem.toTime + "-examContainer"} >
+                        <div className="exam-holder" id={elem.batch + "-" + elem.department + "-" + elem.year + "-" + elem.subjectName + "-" + elem.date + "-" + elem.fromTime + "-" + elem.toTime + "-examHolder"}>
+                          <p className="exam-text" id={elem.batch + "-" + elem.department + "-" + elem.year + "-" + elem.subjectName + "-" + elem.date + "-" + elem.fromTime + "-" + elem.toTime + "-examText"} >{elem.batch + "-" + elem.department + "-" + elem.year + "-" + elem.subjectName + "-" + elem.date + "-" + elem.fromTime + "-" + elem.toTime}</p>
+                        </div>
+                      </div>
+                    )
+                  }
+              })}
+              <div className="tag">
+                <h3>In Complete Exam</h3>
+              </div>
+              {examDetails.map((elem, index) => {
+                var data = new Date()
+                var date = data.toISOString().split("T")[0]
+                var time = data.getHours() + ":" + data.getMinutes()
+                if (date.localeCompare(elem.date) !== -1)
+                  if (time.localeCompare(elem.toTime) !== 1) {
+                    return (
+                      <div className="exam-container col-lg-12 col-sm-12 col-md-12 col-12" onClick={displayExamQuestions} id={elem.batch + "-" + elem.department + "-" + elem.year + "-" + elem.subjectName + "-" + elem.date + "-" + elem.fromTime + "-" + elem.toTime + "-examContainer"} key={elem.batch + "-" + elem.department + "-" + elem.year + "-" + elem.subjectName + "-" + elem.date + "-" + elem.fromTime + "-" + elem.toTime + "-examContainer"} >
+                        <div className="exam-holder" id={elem.batch + "-" + elem.department + "-" + elem.year + "-" + elem.subjectName + "-" + elem.date + "-" + elem.fromTime + "-" + elem.toTime + "-examHolder"}>
+                          <p className="exam-text" id={elem.batch + "-" + elem.department + "-" + elem.year + "-" + elem.subjectName + "-" + elem.date + "-" + elem.fromTime + "-" + elem.toTime + "-examText"} >{elem.batch + "-" + elem.department + "-" + elem.year + "-" + elem.subjectName + "-" + elem.date + "-" + elem.fromTime + "-" + elem.toTime}</p>
+                        </div>
+                      </div>
+                    )
+                  }
+              })}
+
+            </div>
+            :
+            ""
+
+      }
+      {showExamDetails ?
+        <div className="exam-question-container page-center" onClick={closeShowExamDetails} id="close-container">
+          <div className="exam-question page-center">
+            <div className="close-button" id="close-holder" onClick={closeShowExamDetails}>
+              <i id="close-icon" className="button fas fa-times fa-2x"></i>
+            </div>
+            <Error text={error.showDetails ? error.showDetails : ""} class="error-text" />
+            <div className="tag">
+              <h4>One Mark</h4>
+            </div>
+            <div className="exam-question-wrapper row">
+              {
+                showExamDetails.oneMark.map((elem, index) => {
+                  return (
+                    <div className="question-container row col-lg-12 col-md-12 col-sm-12 col-12">
+                      <div className="questionHolder col-lg-12 col-sm-12 col-md-12 col-12">
+                        <p>{index + 1 + "." + elem.question}</p>
+                      </div>
+                      <div className="questionOption col-lg-3 col-sm-3 col-md-3 col-3">
+                        <p>{"A." + elem.optionA}</p>
+                      </div>
+                      <div className="questionOption col-lg-3 col-sm-3 col-md-3 col-3">
+                        <p>{"B." + elem.optionB}</p>
+                      </div>
+                      <div className="questionOption col-lg-3 col-sm-3 col-md-3 col-3">
+                        <p>{"C." + elem.optionC}</p>
+                      </div>
+                      <div className="questionOption col-lg-3 col-sm-3 col-md-3 col-3">
+                        <p>{"D." + elem.optionD}</p>
+                      </div>
+                      <div className="questionOption-answer col-lg-6 col-sm-6 col-md-6 col-6">
+                        <p>Answer :</p>
+                      </div>
+                      <div className="questionOption-answer col-lg-6 col-sm-6 col-md-6 col-6">
+                        <p>{elem.answer}</p>
+                      </div>
+                    </div>
+                  )
+                })
+              }
+            </div>
+            <div className="tag">
+              <h4>Two Mark</h4>
+            </div>
+            <div className="exam-question-wrapper row">
+              {
+                showExamDetails.twoMark.map((elem, index) => {
+                  return (
+                    <div className="question-container row col-lg-12 col-md-12 col-sm-12 col-12">
+                      <div className="questionHolder col-lg-12 col-sm-12 col-md-12 col-12">
+                        <p>{index + 1 + "." + elem.question}</p>
+                      </div>
+                      <div className="questionOption col-lg-3 col-sm-3 col-md-3 col-3">
+                        <p>{"A." + elem.optionA}</p>
+                      </div>
+                      <div className="questionOption col-lg-3 col-sm-3 col-md-3 col-3">
+                        <p>{"B." + elem.optionB}</p>
+                      </div>
+                      <div className="questionOption col-lg-3 col-sm-3 col-md-3 col-3">
+                        <p>{"C." + elem.optionC}</p>
+                      </div>
+                      <div className="questionOption col-lg-3 col-sm-3 col-md-3 col-3">
+                        <p>{"D." + elem.optionD}</p>
+                      </div>
+                      <div className="questionOption-answer col-lg-6 col-sm-6 col-md-6 col-6">
+                        <p>Answer :</p>
+                      </div>
+                      <div className="questionOption-answer col-lg-6 col-sm-6 col-md-6 col-6">
+                        <p>{elem.answer}</p>
+                      </div>
+                    </div>
+                  )
+                })
+              }
+            </div>
+            <div className="button-container col-lg-6 col-md-6 col-sm-6 col-6">
+              <button onClick={deleteExam} className="button">Delete</button>
+            </div>
+          </div>
+
+        </div>
+        :
+        ""
+      }
+      {
+        spinner ? <Loading /> : ""
       }
     </div>
   )

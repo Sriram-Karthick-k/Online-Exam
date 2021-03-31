@@ -164,6 +164,97 @@
           }
         }
       }
+      .exam-wrapper {
+        max-height: 600px;
+        padding: 2rem;
+        .tag {
+          width: 100%;
+          text-align: center;
+          margin: 1rem 0;
+          color: $font;
+        }
+        .exam-container {
+          width: 100%;
+          height: 100%;
+          background-color: $font;
+          padding: 1rem;
+          border-radius: 0.5rem;
+          text-align: center;
+          color: $white;
+          cursor: pointer;
+        }
+      }
+    }
+  }
+  .exam-question-container {
+    height: 100vh;
+    width: 100vw;
+    position: fixed;
+    background-color: $spinner-shadow;
+    z-index: 3;
+    .exam-question {
+      width: 370px;
+      max-width: 750px;
+      max-height: 750px;
+      background-color: $background-color;
+      padding: 2rem;
+      color: $font;
+      border-radius: 0.5rem;
+      .close-button {
+        float: right;
+      }
+      .tag {
+        margin-top: 2rem;
+        width: 100%;
+        margin-bottom: 1rem;
+        text-align: center;
+        text-decoration: underline;
+      }
+      .exam-question-wrapper {
+        max-height: 300px;
+        .question-container {
+          .questionHolder {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+          }
+          .questionOption {
+            font-size: 0.8rem;
+            text-align: center;
+            margin-bottom: 0.5rem;
+          }
+          .questionOption-answer {
+            text-align: center;
+          }
+        }
+      }
+    }
+    .button-container {
+      position: relative;
+      left: 50%;
+      transform: translate(-50%, 0);
+      margin-top: 1rem;
+      .button {
+        transition: all 0.4s;
+        color: $font;
+        width: 100%;
+        padding: 0.6rem;
+        border: none;
+        border-radius: 0.5rem;
+        background-color: transparent;
+        border: 2px solid $font;
+      }
+      .button:hover {
+        background-color: $font;
+        color: $white;
+      }
+      .button::after,
+      .button::focus {
+        box-shadow: none;
+        outline: none;
+        border: none;
+        border: 2px solid $font;
+      }
     }
   }
 }

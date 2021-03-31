@@ -376,6 +376,31 @@ app.post("/create-test",verifyToken, async function(req,res){
   }
 })
 
+app.get("/getExamDetails",verifyToken,async function(req,res){
+  if(Main.connection.readyState===1){ 
+    var examDetails=await ExamInfo.find({}).exec()
+    res.send(examDetails)
+  }else{
+    res.send({error:"The database server is offline"})
+  }
+})
+
+app.post("/deleteExam",verifyToken,async function(req,res){
+  if(Main.connection.readyState===1){
+    var examDetails=await ExamInfo.findOneAndRemove(req.body).exec()
+    var examName=req.body.date+"-"+req.body.batch+"-"+req.body.department+"-"+req.body.year
+    var roomDetails=await RoomInfo.findOneAndRemove({examName:examName}).exec()
+    var attendenceDetails=await AttendenceInfo.findOneAndRemove({examName:examName}).exec()
+    if(examDetails._id && roomDetails._id && attendenceDetails._id){
+      res.send({success:"The exam is successfully deleted"})
+    }else{
+      res.send({error:"The Exam is not deleted successfully"})
+    }
+  }else{
+    res.send({error:"The databse server is offline"})
+  }
+})
+
 
 function verifyToken(req,res,next){
   var token = req.headers.authorization.split(" ")[1]
