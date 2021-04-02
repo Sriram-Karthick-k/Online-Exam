@@ -461,36 +461,72 @@ function CreateText() {
               </div>
               {examDetails.map((elem, index) => {
                 var data = new Date()
-                var date = data.toISOString().split("T")[0]
+                var date = data.toISOString().split("T")[0].split("-")
                 var time = data.getHours() + ":" + data.getMinutes()
-                if (date.localeCompare(elem.date) !== 1)
-                  if (time.localeCompare(elem.toTime) !== -1) {
-                    return (
-                      <div className="exam-container col-lg-12 col-sm-12 col-md-12 col-12" onClick={displayExamQuestions} id={elem.batch + "-" + elem.department + "-" + elem.year + "-" + elem.subjectName + "-" + elem.date + "-" + elem.fromTime + "-" + elem.toTime + "-examContainer"} key={elem.batch + "-" + elem.department + "-" + elem.year + "-" + elem.subjectName + "-" + elem.date + "-" + elem.fromTime + "-" + elem.toTime + "-examContainer"} >
-                        <div className="exam-holder" id={elem.batch + "-" + elem.department + "-" + elem.year + "-" + elem.subjectName + "-" + elem.date + "-" + elem.fromTime + "-" + elem.toTime + "-examHolder"}>
-                          <p className="exam-text" id={elem.batch + "-" + elem.department + "-" + elem.year + "-" + elem.subjectName + "-" + elem.date + "-" + elem.fromTime + "-" + elem.toTime + "-examText"} >{elem.batch + "-" + elem.department + "-" + elem.year + "-" + elem.subjectName + "-" + elem.date + "-" + elem.fromTime + "-" + elem.toTime}</p>
-                        </div>
-                      </div>
-                    )
+                var examD = elem.date.split("-")
+                var todayDate = ""
+                var examDate = ""
+                var insert = false
+                for (var i = 0; i < examD.length; i++) {
+                  todayDate += date[i]
+                  examDate += examD[i]
+                }
+                if (Number(examDate) < Number(todayDate)) {
+                  insert = true
+                } else {
+                  if (Number(examDate) === Number(todayDate)) {
+                    if (time.localeCompare(elem.toTime) !== -1) {
+                      insert = true
+                    }
                   }
+                }
+                //console.log("Complete" + date.localeCompare(elem.date))
+                //console.log("Complete Time" + time.localeCompare(elem.toTime));
+                if (insert) {
+                  return (
+                    <div className="exam-container col-lg-12 col-sm-12 col-md-12 col-12" onClick={displayExamQuestions} id={elem.batch + "-" + elem.department + "-" + elem.year + "-" + elem.subjectName + "-" + elem.date + "-" + elem.fromTime + "-" + elem.toTime + "-examContainer"} key={elem.batch + "-" + elem.department + "-" + elem.year + "-" + elem.subjectName + "-" + elem.date + "-" + elem.fromTime + "-" + elem.toTime + "-examContainer"} >
+                      <div className="exam-holder" id={elem.batch + "-" + elem.department + "-" + elem.year + "-" + elem.subjectName + "-" + elem.date + "-" + elem.fromTime + "-" + elem.toTime + "-examHolder"}>
+                        <p className="exam-text" id={elem.batch + "-" + elem.department + "-" + elem.year + "-" + elem.subjectName + "-" + elem.date + "-" + elem.fromTime + "-" + elem.toTime + "-examText"} >{elem.batch + "-" + elem.department + "-" + elem.year + "-" + elem.subjectName + "-" + elem.date + "-" + elem.fromTime + "-" + elem.toTime}</p>
+                      </div>
+                    </div>
+                  )
+                }
               })}
               <div className="tag">
                 <h3>In Complete Exam</h3>
               </div>
               {examDetails.map((elem, index) => {
                 var data = new Date()
-                var date = data.toISOString().split("T")[0]
+                var date = data.toISOString().split("T")[0].split("-")
                 var time = data.getHours() + ":" + data.getMinutes()
-                if (date.localeCompare(elem.date) !== -1)
-                  if (time.localeCompare(elem.toTime) !== 1) {
-                    return (
-                      <div className="exam-container col-lg-12 col-sm-12 col-md-12 col-12" onClick={displayExamQuestions} id={elem.batch + "-" + elem.department + "-" + elem.year + "-" + elem.subjectName + "-" + elem.date + "-" + elem.fromTime + "-" + elem.toTime + "-examContainer"} key={elem.batch + "-" + elem.department + "-" + elem.year + "-" + elem.subjectName + "-" + elem.date + "-" + elem.fromTime + "-" + elem.toTime + "-examContainer"} >
-                        <div className="exam-holder" id={elem.batch + "-" + elem.department + "-" + elem.year + "-" + elem.subjectName + "-" + elem.date + "-" + elem.fromTime + "-" + elem.toTime + "-examHolder"}>
-                          <p className="exam-text" id={elem.batch + "-" + elem.department + "-" + elem.year + "-" + elem.subjectName + "-" + elem.date + "-" + elem.fromTime + "-" + elem.toTime + "-examText"} >{elem.batch + "-" + elem.department + "-" + elem.year + "-" + elem.subjectName + "-" + elem.date + "-" + elem.fromTime + "-" + elem.toTime}</p>
-                        </div>
-                      </div>
-                    )
+                var examD = elem.date.split("-")
+                var todayDate = ""
+                var examDate = ""
+                var insert = false
+                for (var i = 0; i < examD.length; i++) {
+                  todayDate += date[i]
+                  examDate += examD[i]
+                }
+
+                if (Number(examDate) > Number(todayDate)) {
+                  insert = true
+                } else {
+                  if (Number(examDate) === Number(todayDate)) {
+                    if (time.localeCompare(elem.toTime) === -1) {
+                      insert = true
+                    }
                   }
+                }
+                //console.log("InComplete" + date.localeCompare(elem.date))
+                if (insert) {
+                  return (
+                    <div className="exam-container col-lg-12 col-sm-12 col-md-12 col-12" onClick={displayExamQuestions} id={elem.batch + "-" + elem.department + "-" + elem.year + "-" + elem.subjectName + "-" + elem.date + "-" + elem.fromTime + "-" + elem.toTime + "-examContainer"} key={elem.batch + "-" + elem.department + "-" + elem.year + "-" + elem.subjectName + "-" + elem.date + "-" + elem.fromTime + "-" + elem.toTime + "-examContainer"} >
+                      <div className="exam-holder" id={elem.batch + "-" + elem.department + "-" + elem.year + "-" + elem.subjectName + "-" + elem.date + "-" + elem.fromTime + "-" + elem.toTime + "-examHolder"}>
+                        <p className="exam-text" id={elem.batch + "-" + elem.department + "-" + elem.year + "-" + elem.subjectName + "-" + elem.date + "-" + elem.fromTime + "-" + elem.toTime + "-examText"} >{elem.batch + "-" + elem.department + "-" + elem.year + "-" + elem.subjectName + "-" + elem.date + "-" + elem.fromTime + "-" + elem.toTime}</p>
+                      </div>
+                    </div>
+                  )
+                }
               })}
 
             </div>
@@ -546,7 +582,7 @@ function CreateText() {
               {
                 showExamDetails.twoMark.map((elem, index) => {
                   return (
-                    <div className="question-container row col-lg-12 col-md-12 col-sm-12 col-12">
+                    <div className="question-container row col-lg-12 col-md-12 col-sm-12 col-12" key={index}>
                       <div className="questionHolder col-lg-12 col-sm-12 col-md-12 col-12">
                         <p>{index + 1 + "." + elem.question}</p>
                       </div>

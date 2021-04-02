@@ -165,7 +165,6 @@
         }
       }
       .exam-wrapper {
-        max-height: 600px;
         padding: 2rem;
         .tag {
           width: 100%;
@@ -182,6 +181,7 @@
           text-align: center;
           color: $white;
           cursor: pointer;
+          margin-bottom: 0.4rem;
         }
       }
     }

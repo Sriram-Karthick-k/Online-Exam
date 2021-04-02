@@ -8,8 +8,6 @@ require("dotenv").config()
 const fs=require("fs")
 const multer = require('multer');
 const server = http.createServer(app);
-const socket = require("socket.io");
-const io = socket(server);
 const cors = require('cors');
 const jwt=require("jsonwebtoken")
 const uuid=require("uuid")
@@ -22,13 +20,7 @@ const ExamInfo=require("./mongodb/ExamInfo")
 const AttendenceInfo=require("./mongodb/AttendenceInfo")
 const RoomInfo=require("./mongodb/RoomInfo")
 
-//socket config
 
-io.on("connection",socket=>{
-  socket.on('sendMessage',body=>{
-    console.log(body)
-  })
-})
 
 //config
 app.use(bodyParser.urlencoded({
@@ -302,7 +294,7 @@ app.get("/getParticipantsYearDepartmentBatch",verifyToken,async function(req,res
 
 app.post("/create-test",verifyToken, async function(req,res){
   if(Main.connection.readyState===1){
-    var examName=req.body.date+"-"+req.body.batch+"-"+req.body.department+"-"+req.body.year
+    var examName=req.body.date+"-"+req.body.batch+"-"+req.body.department+"-"+req.body.year+"-"+req.body.subjectName+"-"+req.body.fromTime+"-"+req.body.toTime
     var registerNumber=await StudentInfo.find({studentBatch:req.body.batch,studentDepartment:req.body.department,studentYear:req.body.year},{_id:0,studentRegisterNumber:1}).exec()
     var teacherId=await TeacherInfo.find({},{_id:0,teacherRegisterID:1}).exec()
     var registerNumbersArray=[]
@@ -388,10 +380,10 @@ app.get("/getExamDetails",verifyToken,async function(req,res){
 app.post("/deleteExam",verifyToken,async function(req,res){
   if(Main.connection.readyState===1){
     var examDetails=await ExamInfo.findOneAndRemove(req.body).exec()
-    var examName=req.body.date+"-"+req.body.batch+"-"+req.body.department+"-"+req.body.year
-    var roomDetails=await RoomInfo.findOneAndRemove({examName:examName}).exec()
+    var examName=req.body.date+"-"+req.body.batch+"-"+req.body.department+"-"+req.body.year+"-"+req.body.subjectName+"-"+req.body.fromTime+"-"+req.body.toTime
+    var roomDetails=await RoomInfo.deleteMany({examName:examName}).exec()
     var attendenceDetails=await AttendenceInfo.findOneAndRemove({examName:examName}).exec()
-    if(examDetails._id && roomDetails._id && attendenceDetails._id){
+    if(examDetails._id && attendenceDetails._id){
       res.send({success:"The exam is successfully deleted"})
     }else{
       res.send({error:"The Exam is not deleted successfully"})
@@ -401,6 +393,85 @@ app.post("/deleteExam",verifyToken,async function(req,res){
   }
 })
 
+
+app.post("/student/login",async function(req,res){
+  if(Main.connection.readyState===1){
+    var student=await StudentInfo.findOne({studentRegisterNumber:req.body.registerNumber}).exec()
+    if(!student){
+      res.send({error:"invalid student register number."})
+      return
+    }
+    if(student.studentDOB!==req.body.date){
+      res.send({error:"Date of birth didn't match with register number."})
+      return
+    }
+    var today = new Date();
+    var dd = String(today.getDate()).padStart(2, '0');
+    var mm = String(today.getMonth() + 1).padStart(2, '0'); 
+    var yyyy = today.getFullYear();
+    var regex=yyyy+"-"+mm+"-"+dd+"-"+student.studentBatch+"-"+student.studentDepartment+"-"+student.studentYear+"-"
+    console.log(regex);
+    var room=await RoomInfo.find({"examName":{ $regex:regex, $options: 'i' },registerNumber:{$all:[student.studentRegisterNumber]}},{_id:0,registerNumber:0,teacherId:0,__v:0}).exec()
+    console.log(room);
+    if(room.length>0){
+      var index=null
+      var time=null
+      var presentTime=today.getHours()+":"+today.getMinutes()
+      for(var i=0;i<room.length;i++){
+        for(var j=i;j<room.length;j++){
+          var indexTime=room[i].examName.split("-")[room[i].examName.split("-").length-2]
+          var indexTime1=room[j].examName.split("-")[room[j].examName.split("-").length-2]
+          if(indexTime>indexTime1){
+            var temp=room[i]
+            room[i]=room[j]
+            room[j]=temp
+          }
+        }
+      }
+      for(var i=0;i<room.length;i++){
+        var indexTime=room[i].examName.split("-")[room[i].examName.split("-").length-1]
+        if(presentTime<indexTime){
+          index=i
+          break
+        }
+      }
+      var minimum=room[index].examName.split("-")
+      console.log("sorted")
+      console.log(room);
+      if(index!==null){
+        if(minimum[minimum.length-2]>presentTime){
+          if(Number(minimum[minimum.length-2].split(":")[0])-Number(presentTime.split(":")[0])===1){
+            console.log(((60-Number(presentTime.split(":")[1]))+Number(minimum[minimum.length-2].split(":")[1])))
+            if(((60-Number(presentTime.split(":")[1]))+Number(minimum[minimum.length-2].split(":")[1]))<=15){
+              res.send(room[index])
+            }else{
+              res.send({error:"Login before 15 minutes..."})
+            }
+          }else{
+            if(Number(minimum[minimum.length-2].split(":")[0])-Number(presentTime.split(":")[0])===0){
+              if((Number(minimum[minimum.length-2].split(":")[1])-Number(presentTime.split(":")[1]))<=15){
+                res.send(room[index])
+              }else{
+                res.send({error:"Login before 15 minutes..."})
+              }
+            }else{
+              res.send({error:"Login before 15 minutes..."})
+            }
+          }
+        }else{
+          res.send(room[index])
+        }
+      }else{
+        res.send({error:"Exam is finished"})
+      }
+      console.log("index-"+index);
+    }else{
+      res.send({error:"There is no exam today..."})
+    }
+  }else{
+    res.send({error:"The databaser server is offline."})
+  }
+})
 
 function verifyToken(req,res,next){
   var token = req.headers.authorization.split(" ")[1]

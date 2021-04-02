@@ -6,7 +6,7 @@ import {
 } from "react-router-dom";
 import AdminLogin from "../Admin/AdminLogin"
 import Admin from "../Admin/Admin";
-import Student from "../Student"
+import Student from "../Student/Student"
 import Teachers from "../Teachers"
 import Notfound from "../Notfound"
 import Index from "../Index"
@@ -15,7 +15,7 @@ function Routes() {
   return (
     <Router >
       <Switch >
-        <Route exact path="/student" ><Student /></Route>
+        <Route exact path="/student/exam" ><Student /></Route>
         <Route exact path="/teachers" ><Teachers /></Route>
         <Route exact path="/admin-login" ><AdminLogin /></Route>
         <Route exact path="/admin" ><Protected component={Admin} /></Route>
