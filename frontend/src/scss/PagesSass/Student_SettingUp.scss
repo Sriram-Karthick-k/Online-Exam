@@ -1,0 +1,100 @@
+.student {
+  .student-page {
+    .setting-up {
+      .setting {
+        margin-bottom: 1rem;
+        color: $shadow-color;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        .setting-icon {
+          border: 3.5px solid $shadow-color;
+          padding: 1.4rem;
+          border-radius: 50%;
+          position: relative;
+          margin-right: 0.6rem;
+        }
+        .setting-icon-success {
+          color: $spinner-green;
+          border-color: $spinner-green;
+        }
+        .setting-icon-failure {
+          color: $spinner-red;
+          border-color: $spinner-red;
+        }
+        .setting-text {
+          width: 100%;
+          text-align: left;
+          color: $font;
+          font-size: 1.1rem;
+        }
+        .setting-text-success {
+          color: $spinner-green;
+        }
+        .setting-text-failure {
+          color: $spinner-red;
+        }
+      }
+    }
+  }
+}
+@mixin loading-spinner($selector: "&::before", $time: 1s) {
+  @keyframes spinner {
+    0% {
+      transform: translate3d(-50%, -50%, 0) rotate(0deg);
+    }
+
+    100% {
+      transform: translate3d(-50%, -50%, 0) rotate(360deg);
+    }
+  }
+
+  animation-play-state: running;
+  opacity: 1;
+  position: relative;
+
+  &.-paused {
+    animation-play-state: paused;
+    opacity: 0.2;
+    transition: opacity linear 0.1s;
+  }
+
+  #{$selector} {
+    animation: $time linear infinite spinner;
+    animation-play-state: inherit;
+    border: solid 3.5px $shadow-color;
+    border-bottom-color: $spinner-red;
+    border-radius: 50%;
+    content: "";
+    height: 50px;
+    left: 50%;
+    opacity: inherit;
+    position: absolute;
+    top: 50%;
+    transform: translate3d(-50%, -50%, 0);
+    width: 50px;
+    will-change: transform;
+  }
+}
+
+.loading-spinner-setting {
+  @include loading-spinner;
+}
+
+@media (min-width: 1200px) {
+  .student {
+    .student-page {
+      .setting-up {
+        .setting {
+          .setting-icon {
+            padding: 1.4rem;
+            margin-right: 1rem;
+          }
+          .setting-text {
+            font-size: 1.2rem;
+          }
+        }
+      }
+    }
+  }
+}

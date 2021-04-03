@@ -15,7 +15,7 @@ function Routes() {
   return (
     <Router >
       <Switch >
-        <Route exact path="/student/exam" ><Student /></Route>
+        <Route exact path="/s" ><Student /></Route>
         <Route exact path="/teachers" ><Teachers /></Route>
         <Route exact path="/admin-login" ><AdminLogin /></Route>
         <Route exact path="/admin" ><Protected component={Admin} /></Route>

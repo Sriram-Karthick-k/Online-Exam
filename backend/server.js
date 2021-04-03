@@ -2,6 +2,7 @@
 const express = require('express');
 const app=express()
 const http=require('http')
+const path=require("path")
 const bodyParser=require("body-parser")
 const bcrypt=require("bcrypt")
 require("dotenv").config()
@@ -416,7 +417,7 @@ app.post("/student/login",async function(req,res){
     if(room.length>0){
       var index=null
       var time=null
-      var presentTime=today.getHours()+":"+today.getMinutes()
+      var presentTime=(today.getHours()<10?"0":"")+today.getHours()+":"+(today.getMinutes()<10?"0":"")+today.getMinutes()
       for(var i=0;i<room.length;i++){
         for(var j=i;j<room.length;j++){
           var indexTime=room[i].examName.split("-")[room[i].examName.split("-").length-2]

@@ -4,10 +4,11 @@ import Loading from "../../components/Loading"
 import Error from "../../components/Error"
 import Button from "../../components/Button"
 import Axios from "axios"
+import StudentSetting from "./StudentSetting"
 function Student() {
   const [error, setError] = useState("")
   const [spinner, setSpinner] = useState(false)
-  const [loggedIn, setLoggedIn] = useState(false)
+  const [loggedIn, setLoggedIn] = useState(true)
   function logIn(e) {
     e.preventDefault()
     setSpinner(true)
@@ -42,7 +43,7 @@ function Student() {
       <div className="student-page">
         {
           loggedIn ?
-            <h1>hello</h1>
+            <StudentSetting />
             :
             <form className="form page-center">
               <Error text={error} class="error-text text-center" />
