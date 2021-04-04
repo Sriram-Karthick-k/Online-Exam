@@ -12,6 +12,8 @@ const server = http.createServer(app);
 const cors = require('cors');
 const jwt=require("jsonwebtoken")
 const uuid=require("uuid")
+const socket = require("socket.io");
+const io = socket(server);
 //mongodb imports
 const Main = require("./mongodb/Main")
 const AdminInfo=require("./mongodb/Admin")
@@ -93,8 +95,33 @@ var storage = multer.diskStorage({
 })
  
 var uploads = multer({ storage: storage })
+
+var room={}
+var studentsOnline={}
 //routes
-app.route("/admin-login")
+io.on("connection",socket=>{
+  socket.on("join student room",function(body){
+    socket.registerNumber=body.registerNumber
+    socket.roomNumber=body.roomNumber
+    studentsOnline[body.registerNumber]=socket
+    console.log(studentsOnline)
+  })
+  socket.on("join teacher room",function(body){
+    socket.teacherId=body.teacherId
+    room[body.roomNumber]=socket
+    socket.examName=body.examName
+    socket.registerNumber=body.registerNumber
+    console.log(room)
+  })
+  socket.on("connect to room",function(data){
+    console.log(data)
+    room[data.roomNumber].emit("joining room",{signal:data.signalData,from:data.registerNumber})
+    console.log("connect")
+  })
+})
+
+
+app.route("/admin/login")
   .post(async function(req,res){
     if(req.body.userName.length==0 || req.body.password.length==0){
       res.send({error:"Both the credentials are required."})
@@ -133,7 +160,7 @@ app.get("/Auth",function(req,res){
 })
 
 //adding data to data bases
-app.route("/insert/student")
+app.route("/admin/insert/student")
   .post(verifyToken,uploads.single("compressedImageFile"), async function(req,res,next){
     var details=JSON.parse(req.body.userDetails)
     var fileName=details.registerNumber+"-"+details.registerDate
@@ -172,7 +199,7 @@ app.route("/insert/student")
   })
 
 
-app.route("/insert/teacher")
+app.route("/admin/insert/teacher")
   .post(verifyToken,uploads.single("compressedImageFile"),async function(req,res){
     var details=JSON.parse(req.body.userDetails)
     var fileName=details.registerID+"-"+details.registerDate
@@ -208,7 +235,7 @@ app.route("/insert/teacher")
   })
 
 
-app.route("/getparticipants")
+app.route("/admin/getparticipants")
   .get(verifyToken,async function(req,res){
     if(Main.connection.readyState===1){
       var participants={}
@@ -230,7 +257,7 @@ app.route("/getparticipants")
     }
   })
   
-app.route("/getParticipantDetails")
+app.route("/admin/getParticipantDetails")
   .get(verifyToken,async function(req,res){
     if(Main.connection.readyState===1){
       var details=null
@@ -255,7 +282,7 @@ app.route("/getParticipantDetails")
     }
   })
 
-app.post("/deleteparticipant",verifyToken,async function(req,res){
+app.post("/admin/deleteparticipant",verifyToken,async function(req,res){
   if(Main.connection.readyState===1){
     var details=null
     if(req.body.type==="teacher"){
@@ -274,7 +301,7 @@ app.post("/deleteparticipant",verifyToken,async function(req,res){
     res.send({error:"The database server is offline"})
   }
 })
-app.post("/updateimage",verifyToken,uploads.single("file"),async function(req,res){
+app.post("/admin/updateimage",verifyToken,uploads.single("file"),async function(req,res){
   if(Main.connection.readyState===1){
     res.send({success:"The file is updated"})
   }else{
@@ -282,7 +309,7 @@ app.post("/updateimage",verifyToken,uploads.single("file"),async function(req,re
   }
 })
 
-app.get("/getParticipantsYearDepartmentBatch",verifyToken,async function(req,res){
+app.get("/admin/getParticipantsYearDepartmentBatch",verifyToken,async function(req,res){
   if(Main.connection.readyState===1){
     var studentBatch=await StudentInfo.distinct("studentBatch").exec()
     var studentDepartment=await StudentInfo.distinct("studentDepartment").exec()
@@ -293,7 +320,7 @@ app.get("/getParticipantsYearDepartmentBatch",verifyToken,async function(req,res
   }
 })
 
-app.post("/create-test",verifyToken, async function(req,res){
+app.post("/admin/create-test",verifyToken, async function(req,res){
   if(Main.connection.readyState===1){
     var examName=req.body.date+"-"+req.body.batch+"-"+req.body.department+"-"+req.body.year+"-"+req.body.subjectName+"-"+req.body.fromTime+"-"+req.body.toTime
     var registerNumber=await StudentInfo.find({studentBatch:req.body.batch,studentDepartment:req.body.department,studentYear:req.body.year},{_id:0,studentRegisterNumber:1}).exec()
@@ -369,7 +396,7 @@ app.post("/create-test",verifyToken, async function(req,res){
   }
 })
 
-app.get("/getExamDetails",verifyToken,async function(req,res){
+app.get("/admin/getExamDetails",verifyToken,async function(req,res){
   if(Main.connection.readyState===1){ 
     var examDetails=await ExamInfo.find({}).exec()
     res.send(examDetails)
@@ -378,7 +405,7 @@ app.get("/getExamDetails",verifyToken,async function(req,res){
   }
 })
 
-app.post("/deleteExam",verifyToken,async function(req,res){
+app.post("/admin/deleteExam",verifyToken,async function(req,res){
   if(Main.connection.readyState===1){
     var examDetails=await ExamInfo.findOneAndRemove(req.body).exec()
     var examName=req.body.date+"-"+req.body.batch+"-"+req.body.department+"-"+req.body.year+"-"+req.body.subjectName+"-"+req.body.fromTime+"-"+req.body.toTime
@@ -470,8 +497,88 @@ app.post("/student/login",async function(req,res){
       res.send({error:"There is no exam today..."})
     }
   }else{
-    res.send({error:"The databaser server is offline."})
+    res.send({error:"The database server is offline."})
   }
+})
+
+
+app.post("/teacher/login",async function(req,res){
+  if(Main.connection.readyState===1){
+    var teacherDetails=await TeacherInfo.findOne({teacherRegisterID:req.body.teacherId}).exec()
+    if(teacherDetails){
+      var result=await  bcrypt.compare(req.body.password,teacherDetails.teacherRegisterPassword)
+      if(result){
+        var today=new Date()
+        var dd = String(today.getDate()).padStart(2, '0');
+        var mm = String(today.getMonth() + 1).padStart(2, '0'); 
+        var yyyy = today.getFullYear();
+        var regex=yyyy+"-"+mm+"-"+dd
+        var room=await RoomInfo.find({examName:{$regex:regex,$options:"i"},teacherId:teacherDetails.teacherRegisterID}).exec()
+        if(room.length>0){
+          var index=null
+          var time=null
+          var presentTime=(today.getHours()<10?"0":"")+today.getHours()+":"+(today.getMinutes()<10?"0":"")+today.getMinutes()
+          for(var i=0;i<room.length;i++){
+            for(var j=i;j<room.length;j++){
+              var indexTime=room[i].examName.split("-")[room[i].examName.split("-").length-2]
+              var indexTime1=room[j].examName.split("-")[room[j].examName.split("-").length-2]
+              if(indexTime>indexTime1){
+                var temp=room[i]
+                room[i]=room[j]
+                room[j]=temp
+              }
+            }
+          }
+          for(var i=0;i<room.length;i++){
+            var indexTime=room[i].examName.split("-")[room[i].examName.split("-").length-1]
+            if(presentTime<indexTime){
+              index=i
+              break
+            }
+          }
+          var minimum=room[index].examName.split("-")
+          console.log("sorted")
+          console.log(room);
+          if(index!==null){
+            if(minimum[minimum.length-2]>presentTime){
+              if(Number(minimum[minimum.length-2].split(":")[0])-Number(presentTime.split(":")[0])===1){
+                console.log(((60-Number(presentTime.split(":")[1]))+Number(minimum[minimum.length-2].split(":")[1])))
+                if(((60-Number(presentTime.split(":")[1]))+Number(minimum[minimum.length-2].split(":")[1]))<=20){
+                  res.send(room[index])
+                }else{
+                  res.send({error:"Login before 20 minutes..."})
+                }
+              }else{
+                if(Number(minimum[minimum.length-2].split(":")[0])-Number(presentTime.split(":")[0])===0){
+                  if((Number(minimum[minimum.length-2].split(":")[1])-Number(presentTime.split(":")[1]))<=20){
+                    res.send(room[index])
+                  }else{
+                    res.send({error:"Login before 20 minutes..."})
+                  }
+                }else{
+                  res.send({error:"Login before 20 minutes..."})
+                }
+              }
+            }else{
+              res.send(room[index])
+            }
+          }else{
+            res.send({error:"Exam is finished"})
+          }
+          console.log("index-"+index);
+        }else{
+          res.send({error:"There is no exam today..."})
+        }
+      }else{
+        res.send({error:"Invalid password."})
+      }
+    }else{
+      res.send({error:"The user Name is invalid."})
+    }
+  }else{
+    res.send({error:"The database server is offline."})
+  }
+
 })
 
 function verifyToken(req,res,next){

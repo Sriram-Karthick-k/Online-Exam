@@ -14,7 +14,7 @@ function CreateText() {
   useEffect(() => {
     var token = JSON.parse(localStorage.getItem("UserData"))
     Axios
-      .get("/getParticipantsYearDepartmentBatch", {
+      .get("/admin/getParticipantsYearDepartmentBatch", {
         headers: {
           'Authorization': `token ${token.jwt}`
         }
@@ -46,7 +46,7 @@ function CreateText() {
     setSpinner(true)
     var token = JSON.parse(localStorage.getItem("UserData"))
     Axios
-      .get("/getExamDetails", {
+      .get("/admin/getExamDetails", {
         headers: {
           'Authorization': `token ${token.jwt}`
         }
@@ -170,7 +170,7 @@ function CreateText() {
     setTestDetails(testInfo)
     var token = JSON.parse(localStorage.getItem("UserData"))
     Axios
-      .post("/create-test", testInfo, {
+      .post("/admin/create-test", testInfo, {
         headers: {
           'Authorization': `token ${token.jwt}`
         }
@@ -222,7 +222,7 @@ function CreateText() {
     setSpinner(true)
     var token = JSON.parse(localStorage.getItem("UserData"))
     Axios
-      .post("/deleteExam", showExamDetails, {
+      .post("/admin/deleteExam", showExamDetails, {
         headers: {
           'Authorization': `token ${token.jwt}`
         }

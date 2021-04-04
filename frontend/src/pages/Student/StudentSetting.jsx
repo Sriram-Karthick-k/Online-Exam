@@ -1,15 +1,16 @@
 import react, { useState, useEffect, useRef } from "react"
+import StudentTestPage from "./StudentTestPage"
 
 function StudentSetting() {
-  const [error, setError] = useState({ audio: false, location: false, video: false, screen: false, idCard: false, faceCapture: false })
+  const [error, setError] = useState({ audio: false, location: false, video: false, screen: false })
   const [location, setLocation] = useState(false)
   const [videoStream, setVideoStream] = useState(false)
   const [screenStream, setScreenStream] = useState(false)
-  const myVideo = useRef()
-  const myScreen = useRef()
+  const [next, setNext] = useState(false)
+  const [socket, setSocket] = useState(false)
   useEffect(() => {
+    setSocket(false)
     checkForAudio()
-
   }, [])
   function checkForAudio() {
     setError({ ...error, audio: "Checking for microphone..." })
@@ -71,65 +72,115 @@ function StudentSetting() {
     icon.classList = ["setting-icon loading-spinner-setting"]
     var text = document.getElementById("location-text")
     if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(showPosition);
-      setError({ ...error, audio: "Microphone is accessed.", video: "Camera accessed.", location: "Location is accessed." })
-      icon.classList = ["setting-icon setting-icon-success"]
-      text.classList = ["setting-text setting-text-success"]
-      screenCapture()
+      navigator.geolocation.getCurrentPosition(function (position) {
+        var locationSet = {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude
+        }
+        setLocation(locationSet)
+        icon.classList = ["setting-icon setting-icon-success"]
+        text.classList = ["setting-text setting-text-success"]
+        setError({ ...error, audio: "Microphone is accessed.", video: "Camera accessed.", location: "Location is accessed." })
+        screenCapture()
+      },
+        function (error) {
+          if (error.code == error.PERMISSION_DENIED) {
+            icon.classList = ["setting-icon setting-icon-failure"]
+            text.classList = ["setting-text setting-text-failure"]
+            setError({ ...error, audio: "Microphone is accessed.", video: "Camera accessed.", location: "GPS access is denied." })
+          }
+        });
     } else {
       icon.classList = ["setting-icon setting-icon-failure"]
       text.classList = ["setting-text setting-text-failure"]
       setError({ ...error, audio: "Microphone is accessed.", video: "Camera accessed.", location: "GPS is not working properly..." })
     }
-    function showPosition(position) {
-      var location = {
-        latitude: position.coords.latitude,
-        longitude: position.coords.longitude
-      }
-      setLocation(location)
-    }
   }
   function screenCapture() {
+    setError({ ...error, audio: "Microphone is accessed.", video: "Camera accessed.", location: "Location is accessed.", screen: "Waiting for screen capture..." })
+    var icon = document.getElementById("screen-icon")
+    icon.classList = ["setting-icon loading-spinner-setting"]
+    var text = document.getElementById("screen-text")
 
+    var displayMediaOptions = {
+      video: {
+        cursor: "always"
+      },
+      audio: false
+    };
+    async function startCapture(displayMediaOptions) {
+      try {
+        var screen = await navigator.mediaDevices.getDisplayMedia(displayMediaOptions)
+        console.log(screen)
+        if (screen) {
+          setScreenStream(screen)
+          icon.classList = ["setting-icon setting-icon-success"]
+          text.classList = ["setting-text setting-text-success"]
+          setError({ ...error, audio: "Microphone is accessed.", video: "Camera accessed.", location: "Location is accessed.", screen: "Screen is captured" })
+          setNext(true)
+        } else {
+          icon.classList = ["setting-icon setting-icon-failure"]
+          text.classList = ["setting-text setting-text-failure"]
+          setError({ ...error, audio: "Microphone is accessed.", video: "Camera accessed.", location: "Location is accessed.", screen: "screen is not shared" })
+        }
+
+      } catch (err) {
+        icon.classList = ["setting-icon setting-icon-failure"]
+        text.classList = ["setting-text setting-text-failure"]
+        setNext(true)
+        setError({ ...error, audio: "Microphone is accessed.", video: "Camera accessed.", location: "Location is accessed.", screen: "screen is not shared." })
+      }
+    }
+    startCapture(displayMediaOptions)
+  }
+  function settingDone() {
+    setSocket(true)
   }
   return (
-    <div className="setting-up page-center">
-      <div className="setting">
-        <div className="setting-icon" id="audio-icon">
-          <i class="fas fa-microphone fa page-center"></i>
+    socket ?
+      <StudentTestPage videoStream={videoStream} screenStream={screenStream} />
+      :
+      <div className="setting-up page-center">
+        <div className="setting">
+          <div className="setting-icon" id="audio-icon">
+            <i class="fas fa-microphone fa page-center"></i>
+          </div>
+          <div className="setting-text" id="audio-text">
+            <p>{error.audio ? error.audio : ""}</p>
+          </div>
         </div>
-        <div className="setting-text" id="audio-text">
-          <p>{error.audio ? error.audio : ""}</p>
+        <div className="setting">
+          <div className="setting-icon" id="video-icon">
+            <i class="fas fa-video fa page-center"></i>
+          </div>
+          <div className="setting-text" id="video-text">
+            <p>{error.video ? error.video : ""}</p>
+          </div>
         </div>
+        <div className="setting">
+          <div className="setting-icon" id="location-icon">
+            <i class="fas fa-map-marker fa page-center"></i>
+          </div>
+          <div className="setting-text" id="location-text">
+            <p>{error.location ? error.location : ""}</p>
+          </div>
+        </div>
+        <div className="setting">
+          <div className="setting-icon" id="screen-icon">
+            <i class="fas fa-mobile-alt fa page-center"></i>
+          </div>
+          <div className="setting-text" id="screen-text">
+            <p>{error.screen ? error.screen : ""}</p>
+          </div>
+        </div>
+        {
+          next ?
+            <div className="button">
+              <p onClick={settingDone} class="">Next</p>
+            </div>
+            : ""
+        }
       </div>
-      <div className="setting">
-        <div className="setting-icon" id="video-icon">
-          <i class="fas fa-video fa page-center"></i>
-        </div>
-        <div className="setting-text" id="video-text">
-          <p>{error.video ? error.video : ""}</p>
-        </div>
-      </div>
-      <div className="setting">
-        <div className="setting-icon" id="location-icon">
-          <i class="fas fa-map-marker fa page-center"></i>
-        </div>
-        <div className="setting-text" id="location-text">
-          <p>{error.location ? error.location : ""}</p>
-        </div>
-      </div>
-      <div className="setting">
-        <div className="setting-icon">
-          <i class="fas fa-mobile-alt fa page-center"></i>
-        </div>
-        <div className="setting-text">
-          <p>{error.screen ? error.screen : ""}</p>
-        </div>
-      </div>
-      <div className="video">
-        {screenStream && <video playsInline muted ref={myScreen} autoPlay style={{ width: "300px" }} />}
-      </div>
-    </div>
   )
 }
 export default StudentSetting

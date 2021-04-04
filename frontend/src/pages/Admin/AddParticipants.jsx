@@ -75,7 +75,7 @@ function AddParticipants() {
     var token = JSON.parse(localStorage.getItem("UserData"))
     if (token) {
       Axios
-        .post("/insert/student", data, {
+        .post("/admin/insert/student", data, {
           headers: {
             'Authorization': `token ${token.jwt}`
           }
@@ -91,7 +91,7 @@ function AddParticipants() {
         })
         .catch(err => console.log(err))
     } else {
-      window.location = "/admin-login"
+      window.location = "/admin/login"
     }
     //inserting students into database
 
@@ -117,7 +117,7 @@ function AddParticipants() {
     data.append("compressedImageFile", compressedImageFile)
     var token = JSON.parse(localStorage.getItem("UserData"))
     Axios
-      .post("/insert/teacher", data, {
+      .post("/admin/insert/teacher", data, {
         headers: {
           'Authorization': `token ${token.jwt}`
         }

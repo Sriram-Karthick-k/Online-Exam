@@ -35,6 +35,22 @@
           color: $spinner-red;
         }
       }
+      .button {
+        padding: 1rem;
+        border: 1px solid $font;
+        color: $font;
+        text-align: center;
+        border-radius: 1rem;
+        max-width: 150px;
+        position: relative;
+        left: 50%;
+        transform: translate(-50%, 0);
+      }
+
+      .button:hover {
+        color: $white;
+        background-color: $font;
+      }
     }
   }
 }

@@ -34,6 +34,7 @@ function Student() {
         }
         setError("")
         setLoggedIn(true)
+        res.data.registerNumber = registerNumber
         localStorage.setItem("roomDetails", JSON.stringify(res.data))
         setSpinner(false)
       })

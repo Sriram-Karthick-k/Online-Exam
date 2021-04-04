@@ -45,7 +45,7 @@ function ViewParticipants(props) {
     setSpinner(true)
     var token = JSON.parse(localStorage.getItem("UserData"))
     Axios
-      .get("/getparticipants", {
+      .get("/admin/getparticipants", {
         headers: {
           'Authorization': `token ${token.jwt}`
         }
@@ -135,9 +135,8 @@ function ViewParticipants(props) {
     setSpinner(true)
     var details = e.target.id.split("-")
     var token = JSON.parse(localStorage.getItem("UserData"))
-    console.log(details)
     Axios
-      .get("/getParticipantDetails?find=" + details[(details.length - 3)] + "&type=" + details[(details.length - 1)], {
+      .get("/admin/getParticipantDetails?find=" + details[(details.length - 3)] + "&type=" + details[(details.length - 1)], {
         headers: {
           'Authorization': `token ${token.jwt}`
         }
@@ -204,7 +203,7 @@ function ViewParticipants(props) {
       }
       var token = JSON.parse(localStorage.getItem("UserData"))
       Axios
-        .post("/deleteparticipant", details, {
+        .post("/admin/deleteparticipant", details, {
           headers: {
             'Authorization': `token ${token.jwt}`
           }
@@ -231,7 +230,7 @@ function ViewParticipants(props) {
       }
       var token = JSON.parse(localStorage.getItem("UserData"))
       Axios
-        .post("/deleteparticipant", details, {
+        .post("/admin/deleteparticipant", details, {
           headers: {
             'Authorization': `token ${token.jwt}`
           }
@@ -260,7 +259,7 @@ function ViewParticipants(props) {
     details.append("file", compressedImageFile)
     var token = JSON.parse(localStorage.getItem("UserData"))
     Axios
-      .post("/updateimage", details, {
+      .post("/admin/updateimage", details, {
         headers: {
           'Authorization': `token ${token.jwt}`
         }
@@ -271,13 +270,13 @@ function ViewParticipants(props) {
           setError({ ...error, showParticipant: res.data.error })
         } else {
           setError(errorInitial)
-          setError({ ...error, database: res.data.success })
-          setShowParticipantDetails(false)
-          setEnableUpdate(false)
           setCompreseedImage(false)
           setCompressedImageFile(false)
+          setShowParticipantDetails(false)
+          setEnableUpdate(false)
           setShowParticipantType(false)
           setSpinner(false)
+          setError({ ...error, database: res.data.success })
         }
       })
       .catch(err => { console.log(err); })

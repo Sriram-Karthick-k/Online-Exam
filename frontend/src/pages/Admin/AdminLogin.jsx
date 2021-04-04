@@ -22,7 +22,7 @@ function Admin() {
     var userName = document.getElementById("userName").value
     var password = document.getElementById("password").value
     Axios
-      .post("/admin-login", { userName: userName, password: password })
+      .post("/admin/login", { userName: userName, password: password })
       .then(res => {
         if (res.data.error) {
           setSpinner(false)
