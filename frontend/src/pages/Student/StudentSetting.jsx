@@ -7,10 +7,10 @@ function StudentSetting() {
   const [videoStream, setVideoStream] = useState(false)
   const [screenStream, setScreenStream] = useState(false)
   const [next, setNext] = useState(false)
-  const [socket, setSocket] = useState(false)
+  const [socket, setSocket] = useState(true)
   useEffect(() => {
-    setSocket(false)
-    checkForAudio()
+    setSocket(true)
+    //checkForAudio()
   }, [])
   function checkForAudio() {
     setError({ ...error, audio: "Checking for microphone..." })
@@ -175,8 +175,8 @@ function StudentSetting() {
         </div>
         {
           next ?
-            <div className="button">
-              <p onClick={settingDone} class="">Next</p>
+            <div onClick={settingDone} className="button">
+              <p class="">Next</p>
             </div>
             : ""
         }

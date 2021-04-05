@@ -1,0 +1,158 @@
+.App {
+  text-align: center;
+  display: flex;
+  align-items: center;
+}
+
+.container-calculator {
+  max-width: 350px;
+  min-width: 350px;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 100;
+  transform: translate(-50%, -50%);
+}
+
+.display-field {
+  width: calc(100% - 32px);
+  margin: 8px 16px 8px;
+  text-align: right;
+  font-size: 3rem;
+  font-weight: 500;
+  word-break: break-all;
+  overflow-y: auto;
+  min-height: 80px;
+  max-height: calc(100vh - 492px);
+}
+
+.answer-field {
+  width: calc(100% - 32px);
+  margin: 8px 16px 8px;
+  text-align: right;
+  font-size: 1.5rem;
+  color: #777;
+  word-break: break-all;
+  overflow-y: auto;
+  max-height: 100px;
+}
+
+.landscape-button-layout {
+  display: grid;
+  grid-template-columns: auto auto auto auto auto;
+  grid-auto-rows: max-content;
+  left: 0px;
+  bottom: 16px;
+  width: 100%;
+  background-color: #666;
+  box-shadow: -5px 5px 10px rgba(0, 0, 0, 0.8);
+}
+
+.landscape-button-layout .action-button {
+  min-height: 56px;
+  color: #fff;
+  font-weight: 400 !important;
+  font-size: 1.2rem;
+}
+
+.landscape-button-layout .action-button:hover {
+  background: #666 radial-gradient(circle, transparent 1%, #566063 1%)
+    center/15000%;
+}
+.landscape-button-layout .action-button:active {
+  background-size: 100%;
+  transition: background 0s;
+}
+
+.landscape-button-layout .action-button:nth-last-child(2) span {
+  border: 1px solid;
+  padding: 4px;
+  border-radius: 4px;
+  background-color: #5f5050;
+  opacity: 0.7;
+}
+
+.landscape-button-layout .action-button:nth-last-child(1) span {
+  border: 1px solid;
+  padding: 4px;
+  border-radius: 4px;
+  background-color: #5f5050;
+}
+
+.button-layout {
+  display: grid;
+  grid-template-columns: 75fr 25fr;
+  grid-auto-rows: max-content;
+  left: 0px;
+  bottom: 16px;
+  width: 100%;
+  box-shadow: -5px 5px 10px rgba(0, 0, 0, 0.8);
+}
+
+.button-layout .input-button-layout {
+  display: grid;
+  grid-template-columns: auto auto auto;
+  grid-template-rows: max-height;
+  background-color: #f1f3f4;
+}
+
+.button-layout .operation-button-layout {
+  display: grid;
+  grid-template-rows: auto auto auto auto auto;
+  background-color: #add8e6;
+}
+
+.action-button {
+  min-height: 72px;
+  background-color: transparent;
+  font-size: 1.7rem;
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+  border: 0px;
+  background-position: center;
+  transition: background 0.2s;
+}
+
+.button-layout .input-button-layout .action-button {
+  color: #000;
+}
+
+.button-layout .input-button-layout .action-button:hover {
+  background: #f1f1f1 radial-gradient(circle, transparent 1%, #cfd9dc 1%)
+    center/15000%;
+}
+.button-layout .input-button-layout .action-button:active {
+  background-size: 100%;
+  transition: background 0s;
+}
+
+.button-layout .operation-button-layout .action-button {
+  color: #666;
+}
+
+.button-layout .operation-button-layout .action-button:hover {
+  background: #add8e6 radial-gradient(circle, transparent 1%, #90c2d2 1%)
+    center/15000%;
+}
+.button-layout .operation-button-layout .action-button:active {
+  background-size: 100%;
+  transition: background 0s;
+}
+
+.button-layout .operation-button-layout .action-button:first-child {
+  background-color: #e8dce8;
+  color: #e24f4f;
+  font-weight: 600;
+}
+
+@media screen and (max-width: 376px) {
+  .display-field {
+    font-size: 2rem;
+    max-height: calc(100vh - 442px);
+  }
+  .answer-field {
+    font-size: 1.2rem;
+    max-height: 50px;
+  }
+}

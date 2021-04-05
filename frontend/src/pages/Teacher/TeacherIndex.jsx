@@ -8,13 +8,17 @@ function TeacherIndex() {
   useEffect(() => {
     var room = JSON.parse(localStorage.getItem("teacherRoomDetails"))
     setRoomDetails(room)
-    navigator.mediaDevices.getUserMedia({ audio: true, video: true }).then(data => {
+    navigator.mediaDevices.getUserMedia({ audio: true, video: false }).then(data => {
       setVideoStream(data)
     })
     socket.current = io.connect()
     socket.current.emit("connect to teacher room", room)
     socket.current.on("get video", data => {
       getVideo(data)
+    })
+    socket.current.on("student left", data => {
+      console.log("userleft");
+      console.log(data)
     })
   }, [])
   function getVideo(data) {
@@ -27,16 +31,24 @@ function TeacherIndex() {
       socket.current.emit("got video", { signal: stream, to: data.from })
     })
     peer.on("stream", stream => {
-      var video = document.getElementById("videoSource")
+      var video = document.getElementById(data.from)
       video.srcObject = stream
     })
     peer.signal(data.signalData)
   }
   return (
     <div>
-      <div className="video">
-        <video playsInline id="videoSource" autoPlay style={{ width: "300px" }} />
-      </div>
+      {
+        roomDetails ?
+          roomDetails.registerNumber.map(number => {
+            return (
+              <div className="video" key={number}>
+                <video playsInline id={number} autoPlay style={{ width: "300px" }} />
+              </div>
+            )
+          })
+          : ""
+      }
     </div>
   )
 }
