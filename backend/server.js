@@ -99,6 +99,7 @@ var uploads = multer({ storage: storage })
 var room = {}
 var studentsOnline = {}
 //routes
+try{
 io.on("connection", socket => {
   socket.on("connect to student room",data=>{
     socket.roomNumber=data.roomNumber
@@ -116,11 +117,11 @@ io.on("connection", socket => {
     socket.type="teacher"
     room[data.roomNumber]=socket
     var registerNumber=data.registerNumber
-    // registerNumber.map(student=>{
-    //   if(student in studentsOnline){
-    //     studentsOnline[student].emit("share video again")
-    //   }
-    // })
+    registerNumber.map(student=>{
+      if(student in studentsOnline){
+        studentsOnline[student].emit("share video again")
+      }
+    })
   })
   socket.on("give video",data=>{
     if(data.roomNumber in room){
@@ -132,13 +133,26 @@ io.on("connection", socket => {
   })
   socket.on("disconnect",()=>{
     if(socket.type==="student"){
-      delete studentsOnline[socket.registerNumber]
+      if(room[socket.roomNumber]){
+        room[socket.roomNumber].emit("student left",{registerNumber:socket.registerNumber})
+        delete studentsOnline[socket.registerNumber]
+      }
     }else{
+    var registerNumber=socket.registerNumber
+      if(registerNumber){
+        registerNumber.forEach(number => {
+          if(number in studentsOnline){
+            studentsOnline[number].emit("teacher left")
+          }
+        });
+      }
       delete room[socket.roomNumber]
     }
   })
 })
-
+}catch(err){
+  console.log(err)
+}
 
 app.route("/admin/login")
   .post(async function (req, res) {
