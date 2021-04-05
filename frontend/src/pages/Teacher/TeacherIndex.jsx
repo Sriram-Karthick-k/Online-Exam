@@ -4,30 +4,38 @@ import Peer from "simple-peer"
 function TeacherIndex() {
   var [roomDetails, setRoomDetails] = useState(false)
   var socket = useRef()
-  var userVideo = useRef()
+  var [videoStream, setVideoStream] = useState(false)
   useEffect(() => {
     var room = JSON.parse(localStorage.getItem("teacherRoomDetails"))
     setRoomDetails(room)
+    navigator.mediaDevices.getUserMedia({ audio: true, video: true }).then(data => {
+      setVideoStream(data)
+    })
     socket.current = io.connect()
-    socket.current.emit("join teacher room", room)
-    socket.current.on("joining room", data => {
-      connectToRoom()
+    socket.current.emit("connect to teacher room", room)
+    socket.current.on("get video", data => {
+      getVideo(data)
     })
   }, [])
-  function connectToRoom() {
-    const peer = new Peer({
+  function getVideo(data) {
+    var peer = new Peer({
       initiator: false,
       trickle: false,
-      stream: null
+      stream: false
+    })
+    peer.on("signal", stream => {
+      socket.current.emit("got video", { signal: stream, to: data.from })
     })
     peer.on("stream", stream => {
-      userVideo.current.srcObject = stream
+      var video = document.getElementById("videoSource")
+      video.srcObject = stream
     })
+    peer.signal(data.signalData)
   }
   return (
     <div>
       <div className="video">
-        {<video playsInline muted ref={userVideo} autoPlay style={{ width: "200px" }} />}
+        <video playsInline id="videoSource" autoPlay style={{ width: "300px" }} />
       </div>
     </div>
   )

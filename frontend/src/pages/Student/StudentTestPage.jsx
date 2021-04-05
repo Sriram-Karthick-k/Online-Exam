@@ -4,32 +4,39 @@ import Peer from "simple-peer"
 function StudentTestPage(props) {
   const [roomDetails, setRoomDetails] = useState(false)
   const socket = useRef()
+  var connectionRef = useRef()
   useEffect(() => {
-    var videDiv = document.getElementById("videoSource")
-    videDiv.srcObject = props.videoStream
-    var videDiv1 = document.getElementById("videoSource1")
-    videDiv1.srcObject = props.screenStream
     var room = JSON.parse(localStorage.getItem("roomDetails"))
     setRoomDetails(room)
+    var video = document.getElementById("videoSource")
+    video.srcObject = props.videoStream
     socket.current = io.connect()
-    socket.current.emit("join student room", room)
-    connectToRoom(room)
+    socket.current.emit("connect to student room", room)
+    socket.current.on("share video", data => {
+      shareVideoToRoom(room)
+    })
+    socket.current.on("share video again", data => {
+      shareVideoToRoom(room)
+    })
   }, [])
-  function connectToRoom(room) {
-    const peer = new Peer({
+  function shareVideoToRoom(room) {
+    var peer = new Peer({
       initiator: true,
       trickle: false,
       stream: props.videoStream
     })
-    peer.on("signal", (data) => {
-      socket.current.emit("connect to room", room)
+    peer.on("signal", data => {
+      socket.current.emit("give video", { roomNumber: room.roomNumber, signalData: data, from: room.registerNumber })
+    })
+    socket.current.on("video accepted", signal => {
+      peer.signal(signal.signal)
     })
   }
-  console.log(props.videoStream)
   return (
     <div className="video">
       <video playsInline muted id="videoSource" autoPlay style={{ width: "200px" }} />
       <video playsInline muted id="videoSource1" autoPlay style={{ width: "200px" }} />
+      <video playsInline muted id="partner" autoPlay style={{ width: "200px" }} />
 
     </div>
   )

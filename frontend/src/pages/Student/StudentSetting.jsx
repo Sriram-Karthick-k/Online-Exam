@@ -51,13 +51,13 @@ function StudentSetting() {
           text.classList = ["setting-text setting-text-success"]
           setError({ ...error, audio: "Microphone is accessed", video: "Camera accessed." })
           setVideoStream(stream)
-          getLocation()
+          setNext(true)
         },
         function (err) {
           icon.classList = ["setting-icon setting-icon-failure"]
           text.classList = ["setting-text setting-text-failure"]
           setError({ ...error, audio: "Microphone is accessed", video: "Camera is not accessed." })
-          getLocation()
+          setNext(true)
         }
       );
     } else {
