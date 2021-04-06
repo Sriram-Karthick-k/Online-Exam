@@ -504,14 +504,16 @@ app.post("/student/login", async function (req, res) {
           if (Number(minimum[minimum.length - 2].split(":")[0]) - Number(presentTime.split(":")[0]) === 1) {
             console.log(((60 - Number(presentTime.split(":")[1])) + Number(minimum[minimum.length - 2].split(":")[1])))
             if (((60 - Number(presentTime.split(":")[1])) + Number(minimum[minimum.length - 2].split(":")[1])) <= 15) {
-              res.send(room[index])
+              var token = jwt.sign({ id: student._id }, process.env.JWT_SECRET, { expiresIn: '5h' })
+              res.send({room:room[index],token:token})
             } else {
               res.send({ error: "Login before 15 minutes..." })
             }
           } else {
             if (Number(minimum[minimum.length - 2].split(":")[0]) - Number(presentTime.split(":")[0]) === 0) {
               if ((Number(minimum[minimum.length - 2].split(":")[1]) - Number(presentTime.split(":")[1])) <= 15) {
-                res.send(room[index])
+                var token = jwt.sign({ id: student._id }, process.env.JWT_SECRET, { expiresIn: '5h' })
+                res.send({room:room[index],token:token})
               } else {
                 res.send({ error: "Login before 15 minutes..." })
               }
@@ -520,7 +522,8 @@ app.post("/student/login", async function (req, res) {
             }
           }
         } else {
-          res.send(room[index])
+          var token = jwt.sign({ id: student._id }, process.env.JWT_SECRET, { expiresIn: '5h' })
+          res.send({room:room[index],token:token})
         }
       } else {
         res.send({ error: "Exam is finished" })
@@ -612,6 +615,46 @@ app.post("/teacher/login", async function (req, res) {
     res.send({ error: "The database server is offline." })
   }
 
+})
+
+app.get("/student/getQuestion",verifyToken,async function(req,res){
+  var examName=req.query.examName.split("-")
+  var batch=examName[3]
+  var date=examName[0]+"-"+examName[1]+"-"+examName[2]
+  var department=examName[4]
+  var year=examName[5]
+  var subjectName=examName[6]
+  var fromTime=examName[7]
+  var toTime=examName[8]
+  var questions=await ExamInfo.findOne({subjectName:subjectName,date:date,fromTime:fromTime,toTime:toTime,batch:batch,year:year,department:department},{_id:0,oneMark:1,twoMark:1}).exec()
+  if(questions){
+    var oneMark=[]
+    var twoMark=[]
+    for(var i =0;i<questions.oneMark.length;i++){
+      var obj={}
+      obj.questionNumber=questions.oneMark[i].questionNumber
+      obj.question=questions.oneMark[i].question
+      obj.optionA=questions.oneMark[i].optionA
+      obj.optionB=questions.oneMark[i].optionB
+      obj.optionC=questions.oneMark[i].optionC
+      obj.optionD=questions.oneMark[i].optionD
+      oneMark.push(obj)
+    }
+    for(var i =0;i<questions.twoMark.length;i++){
+      var obj={}
+      obj.questionNumber=questions.twoMark[i].questionNumber
+      obj.question=questions.twoMark[i].question
+      obj.optionA=questions.twoMark[i].optionA
+      obj.optionB=questions.twoMark[i].optionB
+      obj.optionC=questions.twoMark[i].optionC
+      obj.optionD=questions.twoMark[i].optionD
+      twoMark.push(obj)
+    }
+    res.send({oneMark:oneMark,twoMark:twoMark})
+  }else{
+    res.send({error:"There is no exam like that"})
+  }
+  
 })
 
 function verifyToken(req, res, next) {

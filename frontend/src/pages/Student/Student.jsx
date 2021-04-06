@@ -8,7 +8,7 @@ import StudentSetting from "./StudentSetting"
 function Student() {
   const [error, setError] = useState("")
   const [spinner, setSpinner] = useState(false)
-  const [loggedIn, setLoggedIn] = useState(true)
+  const [loggedIn, setLoggedIn] = useState(false)
   function logIn(e) {
     e.preventDefault()
     setSpinner(true)
@@ -34,8 +34,10 @@ function Student() {
         }
         setError("")
         setLoggedIn(true)
-        res.data.registerNumber = registerNumber
-        localStorage.setItem("roomDetails", JSON.stringify(res.data))
+        res.data.room.registerNumber = registerNumber
+        localStorage.setItem("roomDetails", JSON.stringify(res.data.room))
+        localStorage.setItem("studentToken", JSON.stringify(res.data.token))
+
         setSpinner(false)
       })
   }

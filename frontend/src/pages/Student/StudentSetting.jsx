@@ -7,10 +7,10 @@ function StudentSetting() {
   const [videoStream, setVideoStream] = useState(false)
   const [screenStream, setScreenStream] = useState(false)
   const [next, setNext] = useState(false)
-  const [socket, setSocket] = useState(true)
+  const [socket, setSocket] = useState(false)
   useEffect(() => {
-    setSocket(true)
-    //checkForAudio()
+    setSocket(false)
+    checkForAudio()
   }, [])
   function checkForAudio() {
     setError({ ...error, audio: "Checking for microphone..." })
@@ -51,13 +51,12 @@ function StudentSetting() {
           text.classList = ["setting-text setting-text-success"]
           setError({ ...error, audio: "Microphone is accessed", video: "Camera accessed." })
           setVideoStream(stream)
-          setNext(true)
+          getLocation()
         },
         function (err) {
           icon.classList = ["setting-icon setting-icon-failure"]
           text.classList = ["setting-text setting-text-failure"]
           setError({ ...error, audio: "Microphone is accessed", video: "Camera is not accessed." })
-          setNext(true)
         }
       );
     } else {

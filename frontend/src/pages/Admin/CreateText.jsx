@@ -136,6 +136,7 @@ function CreateText() {
     var oneMark = []
     var twoMark = []
     for (var i = 0; i < testDetails.oneMark.length; i++) {
+      var questionNumber = i + 1
       var question = document.getElementById("oneMark-" + (i + 1)).value
       var optionA = document.getElementById("optionAOneMark-" + (i + 1)).value
       var optionB = document.getElementById("optionBOneMark-" + (i + 1)).value
@@ -146,11 +147,12 @@ function CreateText() {
         setError({ ...error, oneMark: "All the question should be entered." })
         return
       }
-      var obj = { question: question, optionA: optionA, optionB: optionB, optionC: optionC, optionD: optionD, answer: answer }
+      var obj = { questionNumber: questionNumber, question: question, optionA: optionA, optionB: optionB, optionC: optionC, optionD: optionD, answer: answer }
       oneMark.push(obj)
     }
     setError(errorInitital)
     for (var i = 0; i < testDetails.twoMark.length; i++) {
+      var questionNumber = i + 1
       var question = document.getElementById("twoMark-" + (i + 1)).value
       var optionA = document.getElementById("optionATwoMark-" + (i + 1)).value
       var optionB = document.getElementById("optionBTwoMark-" + (i + 1)).value
@@ -161,7 +163,7 @@ function CreateText() {
         setError({ ...error, twoMark: "All the question should be entered." })
         return
       }
-      var obj = { question: question, optionA: optionA, optionB: optionB, optionC: optionC, optionD: optionD, answer: answer }
+      var obj = { questionNumber: questionNumber, question: question, optionA: optionA, optionB: optionB, optionC: optionC, optionD: optionD, answer: answer }
       twoMark.push(obj)
     }
     setError(errorInitital)
