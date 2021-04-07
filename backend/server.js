@@ -131,6 +131,14 @@ io.on("connection", socket => {
   socket.on("got video",data=>{
     studentsOnline[data.to].emit("video accepted",data)
   })
+  socket.on("end student test",data=>{
+    if(studentsOnline[data]){
+      studentsOnline[data].emit("end test",{error:"Your test has been manually ended by the procter."})
+    }
+  })
+  socket.on("disconnect-save",data=>{
+    console.log(data)
+  })
   socket.on("disconnect",()=>{
     if(socket.type==="student"){
       if(room[socket.roomNumber]){

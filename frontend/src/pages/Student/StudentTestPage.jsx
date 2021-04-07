@@ -63,8 +63,8 @@ function StudentTestPage(props) {
           }
         }, 1000);
       }
-      var video = document.getElementById("videoSource")
-      video.srcObject = props.videoStream
+      // var video = document.getElementById("videoSource")
+      // video.srcObject = props.videoStream
       socket.current = io.connect()
       socket.current.emit("connect to student room", room)
       socket.current.on("share video", data => {
@@ -77,16 +77,14 @@ function StudentTestPage(props) {
         console.log("teacher left")
         destroyPeer()
       })
+      socket.current.on("end test", data => {
+        setError({ database: data.error })
+        endTest()
+      })
     })
 
 
   }, [])
-  async function setRoom() {
-    setSpinner(true)
-    var room = JSON.parse(localStorage.getItem("roomDetails"))
-    setRoomDetails(room)
-    setSpinner(false)
-  }
   function shareVideoToRoom(room) {
     var peer = new Peer({
       initiator: true,
@@ -116,6 +114,7 @@ function StudentTestPage(props) {
 
   function endTest() {
     console.log("finished")
+
   }
   function startTest() {
     setSpinner(true)

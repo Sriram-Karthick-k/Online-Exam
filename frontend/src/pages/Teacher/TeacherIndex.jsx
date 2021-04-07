@@ -18,7 +18,8 @@ function TeacherIndex() {
     })
     socket.current.on("student left", data => {
       console.log("userleft");
-      console.log(data)
+      var videoDiv = document.getElementById("video-div" + data.registerNumber)
+      videoDiv.classList = ["video-holder-hidden"]
     })
   }, [])
   function getVideo(data) {
@@ -31,22 +32,65 @@ function TeacherIndex() {
       socket.current.emit("got video", { signal: stream, to: data.from })
     })
     peer.on("stream", stream => {
-      var video = document.getElementById(data.from)
+      var videoDiv = document.getElementById("video-div" + data.from)
+      videoDiv.classList = ["video-holder col col-lg-3 col-md-6 col-sm-12 col-12"]
+      var video = document.getElementById("video-stream" + data.from)
       video.srcObject = stream
     })
     peer.signal(data.signalData)
+  }
+  function logOut() {
+    // localStorage.removeItem("teacherRoomDetails")
+    window.location = "/t"
+  }
+  function endStudentTest(e) {
+    var registerNumber = e.target.id.split("-")[1]
+    socket.current.emit("end student test", registerNumber)
   }
   return (
     <div>
       {
         roomDetails ?
-          roomDetails.registerNumber.map(number => {
-            return (
-              <div className="video" key={number}>
-                <video playsInline id={number} autoPlay style={{ width: "300px" }} />
+          <div className="video container" >
+            <div className="row details-container">
+              <div className="room-details col col-lg-4 col-md-4 col-4 col-sm-4">
+                Teacher ID : {roomDetails.teacherId}
               </div>
-            )
-          })
+              <div className="room-details col col-lg-4 col-md-4 col-4 col-sm-4">
+                Subject Name : {roomDetails.examName.split("-")[roomDetails.examName.split("-").length - 3]}
+              </div>
+              <div className="button-container col col-lg-4 col-md-4 col-4 col-sm-4">
+                <div className="button" onClick={logOut}>
+                  Logout
+                </div>
+              </div>
+            </div>
+            <div className="video-wrapper  row">
+              {roomDetails.registerNumber.map(number => {
+                return (
+                  <div className="video-holder col col-lg-3 col-md-6 col-sm-12 col-12" id={"video-div" + number}>
+                    <div key={number} className="video-container">
+                      <video className="video-stream" playsInline id={"video-stream" + number} autoPlay />
+                      <div className="chat page-center">
+                        <div className="icon-container">
+                          <div className="button page-center" id={"endTest-" + number} onClick={endStudentTest}>
+                            End Test
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="number">
+                      Reg.no : {number}
+                    </div>
+
+                  </div>
+                )
+              })
+              }
+
+            </div>
+          </div>
           : ""
       }
     </div>

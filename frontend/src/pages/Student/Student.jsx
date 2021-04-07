@@ -8,7 +8,7 @@ import StudentSetting from "./StudentSetting"
 function Student() {
   const [error, setError] = useState("")
   const [spinner, setSpinner] = useState(false)
-  const [loggedIn, setLoggedIn] = useState(false)
+  const [loggedIn, setLoggedIn] = useState(true)
   function logIn(e) {
     e.preventDefault()
     setSpinner(true)
