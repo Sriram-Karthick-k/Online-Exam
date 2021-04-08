@@ -22,7 +22,7 @@ const TeacherInfo = require("./mongodb/TeacherInfo")
 const ExamInfo = require("./mongodb/ExamInfo")
 const AttendenceInfo = require("./mongodb/AttendenceInfo")
 const RoomInfo = require("./mongodb/RoomInfo")
-
+const AnswerInfo=require("./mongodb/AnswerInfo")
 
 
 //config
@@ -422,11 +422,20 @@ app.post("/admin/create-test", verifyToken, async function (req, res) {
       }
       roomCreate.save()
     }
-
+    //attendence
+    var endTestInfo=[]
+    for (var i = 0; i < registerNumber.length; i++) {
+      var create= {
+        registerNumber: registerNumber[i].studentRegisterNumber,
+        endTest: false
+      }
+      endTestInfo.push(create)
+    }
     var examCreate = new ExamInfo(req.body)
     var attendenceCreate = new AttendenceInfo({
       examName: examName,
-      attendence: registerNumber
+      attendence: registerNumber,
+      endTest:endTestInfo
     })
 
     examCreate.save()
@@ -663,6 +672,187 @@ app.get("/student/getQuestion",verifyToken,async function(req,res){
     res.send({error:"There is no exam like that"})
   }
   
+})
+
+app.post("/student/submit/answer",verifyToken,async function(req,res){
+  if(Main.connection.readyState===1){
+    var examName=req.body.examName.split("-")
+    var batch=examName[3]
+    var date=examName[0]+"-"+examName[1]+"-"+examName[2]
+    var department=examName[4]
+    var year=examName[5]
+    var subjectName=examName[6]
+    var fromTime=examName[7]
+    var toTime=examName[8]
+    var questions=await ExamInfo.findOne({subjectName:subjectName,date:date,fromTime:fromTime,toTime:toTime,batch:batch,year:year,department:department},{_id:0,oneMark:1,twoMark:1}).exec()
+    var oneMark=req.body.oneMark
+    var twoMark=req.body.twoMark
+    var answerinfo=await AnswerInfo.findOne({examName:req.body.examName},{_id:0,answers:1}).exec()
+    if(answerinfo){
+      var oneMarkTotal=0
+      var twoMarkTotal=0
+      var answer={
+        registerNumber:req.body.registerNumber,
+        oneMark:[],
+        twoMark:[],
+        oneMarkTotal:0,
+        twoMarkTotal:0
+      }
+      if(oneMark){
+        var answerOneMarkFinal=[]
+        for(var i=0;i<oneMark.length;i++){
+          if(oneMark[i]===-1){
+            continue
+          }else{
+            for(var j=0;j<questions.oneMark.length;j++){
+              if(oneMark[i].questionNumber===questions.oneMark[j].questionNumber){
+              
+                if(oneMark[i].option.split("-")[2]===questions.oneMark[j].answer){
+                  var answerPush={
+                    questionNumber:oneMark[i].questionNumber,
+                    studentAnswer:oneMark[i].option.split("-")[2],
+                    answer:true
+                  }
+                  answerOneMarkFinal.push(answerPush)
+                  oneMarkTotal+=1
+                } else{
+                  var answerPush={
+                    questionNumber:oneMark[i].questionNumber,
+                    studentAnswer:oneMark[i].option.split("-")[2],
+                    answer:false
+                  }
+                  answerOneMarkFinal.push(answerPush)
+                }
+                break
+              }
+            }
+          }
+        }
+        answer.oneMarkTotal=oneMarkTotal
+        answer.oneMark=answerOneMarkFinal
+      }
+      if(twoMark){
+        var answerTwoMarkFinal=[]
+        for(var i=0;i<twoMark.length;i++){
+          if(twoMark[i]===-1){
+            continue
+          }else{
+            for(var j=0;j<questions.twoMark.length;j++){
+              if(twoMark[i].questionNumber===questions.twoMark[j].questionNumber){
+                
+                if(twoMark[i].option.split("-")[2]===questions.twoMark[j].answer){
+                  var answerPush={
+                    questionNumber:twoMark[i].questionNumber,
+                    studentAnswer:twoMark[i].option.split("-")[2],
+                    answer:true
+                  }
+                  answerTwoMarkFinal.push(answerPush)
+                  twoMarkTotal+=1
+                } else{
+                  var answerPush={
+                    questionNumber:twoMark[i].questionNumber,
+                    studentAnswer:twoMark[i].option.split("-")[2],
+                    answer:false
+                  }
+                  answerTwoMarkFinal.push(answerPush)
+                }
+                break
+              }
+            }
+          }
+        }
+        answer.twoMarkTotal=twoMarkTotal
+        answer.twoMark=answerTwoMarkFinal
+      }
+       answerinfo.answers.push(answer)
+      await AnswerInfo.findOneAndUpdate({examName:req.body.examName},{$set:{answers:answerinfo.answers}}).exec()
+      res.send({success:"The test has been submitted successfully."})
+    }else{
+      var oneMarkTotal=0
+      var twoMarkTotal=0
+      var answer={
+        registerNumber:req.body.registerNumber,
+        oneMark:[],
+        twoMark:[],
+        oneMarkTotal:0,
+        twoMarkTotal:0
+      }
+      if(oneMark){
+        var answerOneMarkFinal=[]
+        for(var i=0;i<oneMark.length;i++){
+          if(oneMark[i]===-1){
+            continue
+          }else{
+            for(var j=0;j<questions.oneMark.length;j++){
+              if(oneMark[i].questionNumber===questions.oneMark[j].questionNumber){
+              
+                if(oneMark[i].option.split("-")[2]===questions.oneMark[j].answer){
+                  var answerPush={
+                    questionNumber:oneMark[i].questionNumber,
+                    studentAnswer:oneMark[i].option.split("-")[2],
+                    answer:true
+                  }
+                  answerOneMarkFinal.push(answerPush)
+                  oneMarkTotal+=1
+                } else{
+                  var answerPush={
+                    questionNumber:oneMark[i].questionNumber,
+                    studentAnswer:oneMark[i].option.split("-")[2],
+                    answer:false
+                  }
+                  answerOneMarkFinal.push(answerPush)
+                }
+                break
+              }
+            }
+          }
+        }
+        answer.oneMarkTotal=oneMarkTotal
+        answer.oneMark=answerOneMarkFinal
+      }
+      if(twoMark){
+        var answerTwoMarkFinal=[]
+        for(var i=0;i<twoMark.length;i++){
+          if(twoMark[i]===-1){
+            continue
+          }else{
+            for(var j=0;j<questions.twoMark.length;j++){
+              if(twoMark[i].questionNumber===questions.twoMark[j].questionNumber){
+                
+                if(twoMark[i].option.split("-")[2]===questions.twoMark[j].answer){
+                  var answerPush={
+                    questionNumber:twoMark[i].questionNumber,
+                    studentAnswer:twoMark[i].option.split("-")[2],
+                    answer:true
+                  }
+                  answerTwoMarkFinal.push(answerPush)
+                  twoMarkTotal+=1
+                } else{
+                  var answerPush={
+                    questionNumber:twoMark[i].questionNumber,
+                    studentAnswer:twoMark[i].option.split("-")[2],
+                    answer:false
+                  }
+                  answerTwoMarkFinal.push(answerPush)
+                }
+                break
+              }
+            }
+          }
+        }
+        answer.twoMarkTotal=twoMarkTotal
+        answer.twoMark=answerTwoMarkFinal
+      }
+      var create=new AnswerInfo({
+        examName:req.body.examName,
+        answers:[answer]
+      })
+      create.save()
+      res.send({success:"The test has been submitted successfully."})
+    }
+  }else{
+    res.send({error:"The database server is offline"})
+  }
 })
 
 function verifyToken(req, res, next) {
