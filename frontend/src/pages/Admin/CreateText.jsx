@@ -182,17 +182,17 @@ function CreateText() {
           setError(errorInitital)
           setError({ ...error, database: res.data.error })
         } else {
-          document.getElementById("subjectName").value = ""
-          document.getElementById("subjectCode").value = ""
-          document.getElementById("date").value = ""
-          document.getElementById("fromTime").value = ""
-          document.getElementById("toTime").value = ""
-          document.getElementById("Batch").value = ""
-          document.getElementById("year").value = ""
-          document.getElementById("department").value = ""
-          document.getElementById("noOf1Mark").value = ""
-          document.getElementById("noOf2Mark").value = ""
-          setTestDetails(false)
+          // document.getElementById("subjectName").value = ""
+          // document.getElementById("subjectCode").value = ""
+          // document.getElementById("date").value = ""
+          // document.getElementById("fromTime").value = ""
+          // document.getElementById("toTime").value = ""
+          // document.getElementById("Batch").value = ""
+          // document.getElementById("year").value = ""
+          // document.getElementById("department").value = ""
+          // document.getElementById("noOf1Mark").value = ""
+          // document.getElementById("noOf2Mark").value = ""
+          // setTestDetails(false)
           setError({ ...error, database: res.data.success })
         }
       })

@@ -5,6 +5,7 @@ import Loading from "../../components/Loading"
 import Calculator from "../../components/Calculator"
 import Error from "../../components/Error"
 import Axios from "axios"
+import { json } from "mathjs"
 function StudentTestPage(props) {
   const errorInitial = { database: false }
   const [error, setError] = useState(errorInitial)
@@ -20,13 +21,27 @@ function StudentTestPage(props) {
   const [twoMarkIndex, setTwoMarkIndex] = useState(0)
   const [answerOneMark, setAnswerOneMark] = useState([])
   const [answerTwoMark, setAnswerTwoMark] = useState([])
-  const [fontSize, setFontSize] = useState("1rem")
+  const [fontSize, setFontSize] = useState("question-container big-font")
   const socket = useRef()
   var connectionRef = useRef()
 
   useEffect(() => {
     const promise = new Promise((res, fail) => {
       var room = JSON.parse(localStorage.getItem("roomDetails"))
+      var answer = JSON.parse(localStorage.getItem("answers"))
+      if (answer && (room.examName == answer.examName)) {
+        if (answer.registerNumber == room.registerNumber) {
+          if (answer.oneMark) {
+            setAnswerOneMark(answer.oneMark)
+          }
+          if (answer.twoMark) {
+            setAnswerTwoMark(answer.twoMark)
+          }
+        }
+      } else {
+        localStorage.setItem("answers", false)
+      }
+
       if (room) {
         res(room)
       } else {
@@ -63,8 +78,8 @@ function StudentTestPage(props) {
           }
         }, 1000);
       }
-      // var video = document.getElementById("videoSource")
-      // video.srcObject = props.videoStream
+      var video = document.getElementById("videoSource")
+      video.srcObject = props.videoStream
       socket.current = io.connect()
       socket.current.emit("connect to student room", room)
       socket.current.on("share video", data => {
@@ -72,6 +87,9 @@ function StudentTestPage(props) {
       })
       socket.current.on("share video again", data => {
         shareVideoToRoom(room)
+      })
+      socket.current.on("share screen", data => {
+        shareScreen(room)
       })
       socket.current.on("teacher left", data => {
         console.log("teacher left")
@@ -82,8 +100,6 @@ function StudentTestPage(props) {
         endTest()
       })
     })
-
-
   }, [])
   function shareVideoToRoom(room) {
     var peer = new Peer({
@@ -99,7 +115,7 @@ function StudentTestPage(props) {
         peer.signal(signal.signal)
         connectionRef.current = peer
       } catch (err) {
-        console.log(err);
+        console.log("error");
       }
     })
   }
@@ -108,14 +124,29 @@ function StudentTestPage(props) {
       connectionRef.current.destroy()
       connectionRef.current = null
     } catch (err) {
-      console.log(err);
+      console.log('error');
     }
   }
 
-  function endTest() {
-    console.log("finished")
-
+  function shareScreen(room) {
+    var peer = new Peer({
+      initiator: true,
+      trickle: false,
+      stream: props.screenStream
+    })
+    peer.on("signal", data => {
+      socket.current.emit("give screen stream", { roomNumber: room.roomNumber, signalData: data, from: room.registerNumber })
+    })
+    socket.current.on("screen accepted", signal => {
+      try {
+        peer.signal(signal.signal)
+        connectionRef.current = peer
+      } catch (err) {
+        console.log("error");
+      }
+    })
   }
+
   function startTest() {
     setSpinner(true)
     setTestStarted(true)
@@ -153,6 +184,18 @@ function StudentTestPage(props) {
       if (answerOneMark.length === 0) {
         var array = new Array(questions.oneMark.length).fill(-1)
         setAnswerOneMark(array)
+        var getItemLocalStorage = JSON.parse(localStorage.getItem("answers"))
+        if (getItemLocalStorage && getItemLocalStorage.examName === roomDetails.examName) {
+          getItemLocalStorage.oneMark = array
+          localStorage.setItem("answers", JSON.stringify(getItemLocalStorage))
+        } else {
+          var setItemLocalStorage = {
+            roomNumber: roomDetails.registerNumber,
+            examName: roomDetails.examName,
+            oneMark: array
+          }
+          localStorage.setItem("answers", JSON.stringify(setItemLocalStorage))
+        }
       }
       if (id[1] === "before") {
         setOneMarkIndex(oneMarkIndex - 1)
@@ -164,6 +207,18 @@ function StudentTestPage(props) {
       if (answerTwoMark.length === 0) {
         var array = new Array(questions.twoMark.length).fill(-1)
         setAnswerTwoMark(array)
+        var getItemLocalStorage = JSON.parse(localStorage.getItem("answers"))
+        if (getItemLocalStorage && getItemLocalStorage.examName === roomDetails.examName) {
+          getItemLocalStorage.twoMark = array
+          localStorage.setItem("answers", JSON.stringify(getItemLocalStorage))
+        } else {
+          var setItemLocalStorage = {
+            roomNumber: roomDetails.registerNumber,
+            examName: roomDetails.examName,
+            twoMark: array
+          }
+          localStorage.setItem("answers", JSON.stringify(setItemLocalStorage))
+        }
       }
       if (id[1] === "before") {
         setTwoMarkIndex(twoMarkIndex - 1)
@@ -178,45 +233,89 @@ function StudentTestPage(props) {
         var array = new Array(questions.oneMark.length).fill(-1)
         array[oneMarkIndex] = {
           questionNumber: questions.oneMark[oneMarkIndex].questionNumber,
-          answer: e.target.value,
           option: e.target.id
         }
         setAnswerOneMark(array)
+        var getItemLocalStorage = JSON.parse(localStorage.getItem("answers"))
+        if (getItemLocalStorage && getItemLocalStorage.examName === roomDetails.examName) {
+          getItemLocalStorage.oneMark = array
+          localStorage.setItem("answers", JSON.stringify(getItemLocalStorage))
+        } else {
+          var setItemLocalStorage = {
+            roomNumber: roomDetails.registerNumber,
+            examName: roomDetails.examName,
+            oneMark: array
+          }
+          localStorage.setItem("answers", JSON.stringify(setItemLocalStorage))
+        }
       } else {
         var array = answerOneMark
         array[oneMarkIndex] = {
           questionNumber: questions.oneMark[oneMarkIndex].questionNumber,
-          answer: e.target.value,
           option: e.target.id
         }
         setAnswerOneMark(array)
+        var getItemLocalStorage = JSON.parse(localStorage.getItem("answers"))
+        if (getItemLocalStorage && getItemLocalStorage.examName === roomDetails.examName) {
+          getItemLocalStorage.oneMark = array
+          localStorage.setItem("answers", JSON.stringify(getItemLocalStorage))
+        } else {
+          var setItemLocalStorage = {
+            roomNumber: roomDetails.registerNumber,
+            examName: roomDetails.examName,
+            oneMark: array
+          }
+          localStorage.setItem("answers", JSON.stringify(setItemLocalStorage))
+        }
       }
     } else {
       if (answerTwoMark.length === 0) {
         var array = new Array(questions.twoMark.length).fill(-1)
         array[twoMarkIndex] = {
           questionNumber: questions.twoMark[twoMarkIndex].questionNumber,
-          answer: e.target.value,
           option: e.target.id
         }
         setAnswerTwoMark(array)
+        var getItemLocalStorage = JSON.parse(localStorage.getItem("answers"))
+        if (getItemLocalStorage && getItemLocalStorage.examName === roomDetails.examName) {
+          getItemLocalStorage.twoMark = array
+          localStorage.setItem("answers", JSON.stringify(getItemLocalStorage))
+        } else {
+          var setItemLocalStorage = {
+            roomNumber: roomDetails.registerNumber,
+            examName: roomDetails.examName,
+            twoMark: array
+          }
+          localStorage.setItem("answers", JSON.stringify(setItemLocalStorage))
+        }
       } else {
         var array = answerTwoMark
         array[twoMarkIndex] = {
           questionNumber: questions.twoMark[twoMarkIndex].questionNumber,
-          answer: e.target.value,
           option: e.target.id
         }
         setAnswerTwoMark(array)
+        var getItemLocalStorage = JSON.parse(localStorage.getItem("answers"))
+        if (getItemLocalStorage && getItemLocalStorage.examName === roomDetails.examName) {
+          getItemLocalStorage.twoMark = array
+          localStorage.setItem("answers", JSON.stringify(getItemLocalStorage))
+        } else {
+          var setItemLocalStorage = {
+            roomNumber: roomDetails.registerNumber,
+            examName: roomDetails.examName,
+            twoMark: array
+          }
+          localStorage.setItem("answers", JSON.stringify(setItemLocalStorage))
+        }
       }
     }
   }
-  function changeFont() {
-    console.log("hello")
-    if (fontSize == "1.3rem!important") {
-      setFontSize("2rem!important")
+  function changeFont(e) {
+    var id = e.target.id
+    if (id === "big") {
+      setFontSize("question-container big-font")
     } else {
-      setFontSize("1.3rem!important")
+      setFontSize("question-container small-font")
     }
   }
   function changeQuestionTo(e) {
@@ -233,6 +332,43 @@ function StudentTestPage(props) {
     } else {
       setCalculator(true)
     }
+  }
+  function endTest() {
+    setSpinner(true)
+    var answer = JSON.parse(localStorage.getItem("answers"))
+    if (answer) {
+      var oneMark = answer.oneMark
+      var twoMark = answer.twoMark
+    } else {
+      var oneMark = false
+      var twoMark = false
+    }
+    var token = JSON.parse(localStorage.getItem("studentToken"))
+    var roomDetails = JSON.parse(localStorage.getItem("roomDetails"))
+    Axios.post("/student/submit/answer", { registerNumber: roomDetails.registerNumber, examName: roomDetails.examName, oneMark: oneMark, twoMark: twoMark }, {
+      headers: {
+        'Authorization': `token ${token}`
+      }
+    })
+      .then(res => {
+        if (res.data.error) {
+          console.log(res.data);
+          setError({ ...error, database: res.data.error })
+          setSpinner(false)
+          setTestButton(true)
+        }
+        if (res.data.success) {
+          setSpinner(false)
+          setTestButton(false)
+          setError({ ...error, database: res.data.success })
+          setSpinner(true)
+          setTimeout(() => {
+            localStorage.clear()
+            window.location = "/s"
+          }, 5000);
+        }
+      })
+      .catch(err => { console.log(err) })
   }
   return (
     <div className="test">
@@ -261,11 +397,11 @@ function StudentTestPage(props) {
             <div className="tool" onClick={openCalculator}>
               <i class="fas fa-calculator fa-2x"></i>
             </div>
-            <div className="tool" onClick={changeFont}>
-              <i class="fas fa-font fa-2x"></i>
+            <div className="tool" >
+              <i class="fas fa-font fa-2x" id="big" onClick={changeFont}></i>
             </div>
-            <div className="tool" onClick={changeFont}>
-              <i class="fas fa-font "></i>
+            <div className="tool" >
+              <i class="fas fa-font" id="small" onClick={changeFont}></i>
             </div>
           </div>
           {
@@ -347,7 +483,7 @@ function StudentTestPage(props) {
                         <h3>No Two Mark questions</h3>
                       </div>
                 }
-                <div className="total-question-container" style={{ fontSize: fontSize }}>
+                <div className="total-question-container">
                   {
                     questionMenu === "1"
                       ?
@@ -355,7 +491,7 @@ function StudentTestPage(props) {
                         questions.oneMark.map((elem, index) => {
                           return (
                             index === oneMarkIndex ?
-                              <div className="question-container">
+                              <div className={fontSize}>
                                 <div className="question-holder">
                                   <p>{questions.oneMark[oneMarkIndex].question}</p>
                                 </div>
@@ -468,7 +604,7 @@ function StudentTestPage(props) {
                         questions.twoMark.map((elem, index) => {
                           return (
                             index === twoMarkIndex ?
-                              <div className="question-container">
+                              <div className={fontSize}>
                                 <div className="question-holder">
                                   <p>{questions.twoMark[twoMarkIndex].question}</p>
                                 </div>
@@ -579,7 +715,7 @@ function StudentTestPage(props) {
                 </div>
                 {
                   questions.twoMark ?
-                    twoMarkIndex === (questions.twoMark.length - 1) ?
+                    (twoMarkIndex === (questions.twoMark.length - 1)) && (questionMenu === "2") ?
                       <div className="end-test" onClick={endTest}>
                         End Test
                     </div>

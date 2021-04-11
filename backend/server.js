@@ -128,17 +128,37 @@ io.on("connection", socket => {
       room[data.roomNumber].emit("get video",{signalData:data.signalData,from:data.from})
     }
   })
+  
   socket.on("got video",data=>{
-    studentsOnline[data.to].emit("video accepted",data)
+    if(data.to in studentsOnline){
+      studentsOnline[data.to].emit("video accepted",data)
+    }
   })
+
+  socket.on("give screen",data=>{
+    if(data.to in studentsOnline){
+      studentsOnline[data.to].emit("share screen")
+    }
+  })
+
+  socket.on("give screen stream",data=>{
+    if(data.roomNumber in room){
+      room[data.roomNumber].emit("get screen",{signalData:data.signalData,from:data.from})
+    }
+  })
+
+  socket.on("got screen",data=>{
+    if(data.to in studentsOnline){
+      studentsOnline[data.to].emit("screen accepted",data)
+    }
+  })
+
   socket.on("end student test",data=>{
     if(studentsOnline[data]){
       studentsOnline[data].emit("end test",{error:"Your test has been manually ended by the procter."})
     }
   })
-  socket.on("disconnect-save",data=>{
-    console.log(data)
-  })
+  
   socket.on("disconnect",()=>{
     if(socket.type==="student"){
       if(room[socket.roomNumber]){
@@ -371,7 +391,8 @@ app.post("/admin/create-test", verifyToken, async function (req, res) {
       registerNumbersArray.push(registerNumber[i].studentRegisterNumber)
       registerNumber[i] = {
         registerNumber: registerNumber[i].studentRegisterNumber,
-        attendence: false
+        attendence: false,
+        endTest:false
       }
     }
     var studentLength = registerNumber.length
@@ -423,21 +444,11 @@ app.post("/admin/create-test", verifyToken, async function (req, res) {
       roomCreate.save()
     }
     //attendence
-    var endTestInfo=[]
-    for (var i = 0; i < registerNumber.length; i++) {
-      var create= {
-        registerNumber: registerNumber[i].studentRegisterNumber,
-        endTest: false
-      }
-      endTestInfo.push(create)
-    }
     var examCreate = new ExamInfo(req.body)
     var attendenceCreate = new AttendenceInfo({
       examName: examName,
-      attendence: registerNumber,
-      endTest:endTestInfo
+      attendence: registerNumber
     })
-
     examCreate.save()
     attendenceCreate.save()
     res.send({ success: "The test has been created successfully." })
@@ -461,6 +472,7 @@ app.post("/admin/deleteExam", verifyToken, async function (req, res) {
     var examName = req.body.date + "-" + req.body.batch + "-" + req.body.department + "-" + req.body.year + "-" + req.body.subjectName + "-" + req.body.fromTime + "-" + req.body.toTime
     var roomDetails = await RoomInfo.deleteMany({ examName: examName }).exec()
     var attendenceDetails = await AttendenceInfo.findOneAndRemove({ examName: examName }).exec()
+    var answerDetails=await AnswerInfo.findOneAndRemove({examName:examName}).exec()
     if (examDetails._id && attendenceDetails._id) {
       res.send({ success: "The exam is successfully deleted" })
     } else {
@@ -513,39 +525,77 @@ app.post("/student/login", async function (req, res) {
           break
         }
       }
-      var minimum = room[index].examName.split("-")
-      console.log("sorted")
-      console.log(room);
+      console.log("index-" + index);
       if (index !== null) {
-        if (minimum[minimum.length - 2] > presentTime) {
-          if (Number(minimum[minimum.length - 2].split(":")[0]) - Number(presentTime.split(":")[0]) === 1) {
-            console.log(((60 - Number(presentTime.split(":")[1])) + Number(minimum[minimum.length - 2].split(":")[1])))
-            if (((60 - Number(presentTime.split(":")[1])) + Number(minimum[minimum.length - 2].split(":")[1])) <= 15) {
-              var token = jwt.sign({ id: student._id }, process.env.JWT_SECRET, { expiresIn: '5h' })
-              res.send({room:room[index],token:token})
-            } else {
-              res.send({ error: "Login before 15 minutes..." })
-            }
-          } else {
-            if (Number(minimum[minimum.length - 2].split(":")[0]) - Number(presentTime.split(":")[0]) === 0) {
-              if ((Number(minimum[minimum.length - 2].split(":")[1]) - Number(presentTime.split(":")[1])) <= 15) {
-                var token = jwt.sign({ id: student._id }, process.env.JWT_SECRET, { expiresIn: '5h' })
-                res.send({room:room[index],token:token})
+        var minimum = room[index].examName.split("-")
+        console.log("sorted")
+        console.log(room);
+        if(req.body.registerNumber in studentsOnline){
+          res.send({error:"You have been already logged in from another pc..."})
+        }else{
+          if (minimum[minimum.length - 2] > presentTime) {
+            if (Number(minimum[minimum.length - 2].split(":")[0]) - Number(presentTime.split(":")[0]) === 1) {
+              console.log(((60 - Number(presentTime.split(":")[1])) + Number(minimum[minimum.length - 2].split(":")[1])))
+              if (((60 - Number(presentTime.split(":")[1])) + Number(minimum[minimum.length - 2].split(":")[1])) <= 15) {
+                //endTest updation
+                var endTest=await AttendenceInfo.findOne({examName:room[index].examName},{_id:0,attendence:1}).exec()   
+                var alreadySubmitted=endTest.attendence.find(x=>x.registerNumber===Number(req.body.registerNumber))
+                if(alreadySubmitted.endTest===false){
+                  var indexOfAlreadySubmitted=endTest.attendence.indexOf(alreadySubmitted)
+                  alreadySubmitted.attendence=true
+                  endTest[indexOfAlreadySubmitted]=indexOfAlreadySubmitted
+                  await AttendenceInfo.findOneAndUpdate({examName:room[index].examName},{$set:{attendence:endTest.attendence}}).exec()
+                  var token = jwt.sign({ id: student._id }, process.env.JWT_SECRET, { expiresIn: '5h' })
+                  res.send({room:room[index],token:token})
+                }else{
+                  res.send({error:"Your test has been already submitted."})
+                }
               } else {
                 res.send({ error: "Login before 15 minutes..." })
               }
             } else {
-              res.send({ error: "Login before 15 minutes..." })
+              if (Number(minimum[minimum.length - 2].split(":")[0]) - Number(presentTime.split(":")[0]) === 0) {
+                if ((Number(minimum[minimum.length - 2].split(":")[1]) - Number(presentTime.split(":")[1])) <= 15) {
+                   //endTest updation
+                    var endTest=await AttendenceInfo.findOne({examName:room[index].examName},{_id:0,attendence:1}).exec()   
+                    var alreadySubmitted=endTest.attendence.find(x=>x.registerNumber===Number(req.body.registerNumber))
+                    if(alreadySubmitted.endTest===false){
+                      var indexOfAlreadySubmitted=endTest.attendence.indexOf(alreadySubmitted)
+                      alreadySubmitted.attendence=true
+                      endTest[indexOfAlreadySubmitted]=indexOfAlreadySubmitted
+                      await AttendenceInfo.findOneAndUpdate({examName:room[index].examName},{$set:{attendence:endTest.attendence}}).exec()
+                      var token = jwt.sign({ id: student._id }, process.env.JWT_SECRET, { expiresIn: '5h' })
+                      res.send({room:room[index],token:token})
+                    }else{
+                      res.send({error:"Your test has been already submitted."})
+                    }
+                } else {
+                  res.send({ error: "Login before 15 minutes..." })
+                }
+              } else {
+                res.send({ error: "Login before 15 minutes..." })
+              }
             }
+          } else {
+             //endTest updation
+                var endTest=await AttendenceInfo.findOne({examName:room[index].examName},{_id:0,attendence:1}).exec()   
+                var alreadySubmitted=endTest.attendence.find(x=>x.registerNumber===Number(req.body.registerNumber))
+                if(alreadySubmitted.endTest===false){
+                  var indexOfAlreadySubmitted=endTest.attendence.indexOf(alreadySubmitted)
+                  alreadySubmitted.attendence=true
+                  endTest[indexOfAlreadySubmitted]=indexOfAlreadySubmitted
+                  await AttendenceInfo.findOneAndUpdate({examName:room[index].examName},{$set:{attendence:endTest.attendence}}).exec()
+                  var token = jwt.sign({ id: student._id }, process.env.JWT_SECRET, { expiresIn: '5h' })
+                  res.send({room:room[index],token:token})
+                }else{
+                  res.send({error:"Your test has been already submitted."})
+                }
           }
-        } else {
-          var token = jwt.sign({ id: student._id }, process.env.JWT_SECRET, { expiresIn: '5h' })
-          res.send({room:room[index],token:token})
         }
       } else {
         res.send({ error: "Exam is finished" })
       }
-      console.log("index-" + index);
+      
     } else {
       res.send({ error: "There is no exam today..." })
     }
@@ -764,9 +814,20 @@ app.post("/student/submit/answer",verifyToken,async function(req,res){
         answer.twoMarkTotal=twoMarkTotal
         answer.twoMark=answerTwoMarkFinal
       }
-       answerinfo.answers.push(answer)
-      await AnswerInfo.findOneAndUpdate({examName:req.body.examName},{$set:{answers:answerinfo.answers}}).exec()
-      res.send({success:"The test has been submitted successfully."})
+      answerinfo.answers.push(answer)
+      //endTest updation
+      var endTest=await AttendenceInfo.findOne({examName:req.body.examName},{_id:0,attendence:1}).exec()   
+      var alreadySubmitted=endTest.attendence.find(x=>x.registerNumber===Number(req.body.registerNumber))
+      if(alreadySubmitted.endTest===false){
+        var indexOfAlreadySubmitted=endTest.attendence.indexOf(alreadySubmitted)
+        alreadySubmitted.endTest=true
+        endTest[indexOfAlreadySubmitted]=alreadySubmitted
+        await AnswerInfo.findOneAndUpdate({examName:req.body.examName},{$set:{answers:answerinfo.answers}}).exec()
+        await AttendenceInfo.findOneAndUpdate({examName:req.body.examName},{$set:{attendence:endTest.attendence}}).exec()
+        res.send({success:"The test has been submitted successfully.You will be redirected to login page in 5 seconds."})
+      }else{
+        res.send({error:"Your test has been already submitted."})
+      }
     }else{
       var oneMarkTotal=0
       var twoMarkTotal=0
@@ -847,8 +908,19 @@ app.post("/student/submit/answer",verifyToken,async function(req,res){
         examName:req.body.examName,
         answers:[answer]
       })
-      create.save()
-      res.send({success:"The test has been submitted successfully."})
+      //endTest updation
+      var endTest=await AttendenceInfo.findOne({examName:req.body.examName},{_id:0,attendence:1}).exec()   
+      var alreadySubmitted=endTest.attendence.find(x=>x.registerNumber===Number(req.body.registerNumber))
+      if(alreadySubmitted.endTest===false){
+        var indexOfAlreadySubmitted=endTest.attendence.indexOf(alreadySubmitted)
+        alreadySubmitted.endTest=true
+        endTest[indexOfAlreadySubmitted]=alreadySubmitted
+        create.save()
+        await AttendenceInfo.findOneAndUpdate({examName:req.body.examName},{$set:{attendence:endTest.attendence}}).exec()
+        res.send({success:"The test has been submitted successfully.You will be redirected to login page in 5 seconds."})
+      }else{
+        res.send({error:"Your test has been already submitted."})
+      }
     }
   }else{
     res.send({error:"The database server is offline"})

@@ -9,7 +9,7 @@ function Protected(props) {
       .then((res) => {
         if (!res.data.loggedIn) {
           localStorage.removeItem("UserData");
-          window.location = "/admin-login";
+          window.location = "/admin/login";
         } else {
           setAuth(true);
         }

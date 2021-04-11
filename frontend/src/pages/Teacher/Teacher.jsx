@@ -8,7 +8,7 @@ import Axios from "axios"
 function Teachers() {
   const [error, setError] = useState("")
   const [spinner, setSpinner] = useState(false)
-  const [loggedIn, setLoggedIn] = useState(true)
+  const [loggedIn, setLoggedIn] = useState(false)
   function logIn(e) {
     e.preventDefault()
     var teacherId = document.getElementById("teacherId").value
