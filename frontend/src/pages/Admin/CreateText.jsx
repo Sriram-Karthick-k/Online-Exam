@@ -2,7 +2,7 @@ import react, { useState, useEffect } from "react"
 import Error from "../../components/Error"
 import Axios from "axios"
 import Loading from "../../components/Loading"
-function CreateText() {
+function CreateText(props) {
   const [spinner, setSpinner] = useState(false)
   const errorInitital = { database: false, oneMark: false, twoMark: false, showDetails: false }
   const [error, setError] = useState(errorInitital)
@@ -12,22 +12,33 @@ function CreateText() {
   const [examDetails, setExamDetails] = useState(false)
   const [showExamDetails, setShowExamDetails] = useState(false)
   useEffect(() => {
-    var token = JSON.parse(localStorage.getItem("UserData"))
-    Axios
-      .get("/admin/getParticipantsYearDepartmentBatch", {
-        headers: {
-          'Authorization': `token ${token.jwt}`
-        }
-      })
-      .then(res => {
-        if (res.data.error) {
-          setError({ ...error, database: res.data.error })
-        } else {
-          setError(errorInitital)
-          setDetails(res.data)
-        }
-      })
-
+    setSpinner(true)
+    var promise = new Promise((resolve, fail) => {
+      var token = JSON.parse(localStorage.getItem("UserData"))
+      if (token) {
+        resolve(token)
+      } else {
+        fail("failed")
+      }
+    })
+    promise.then(data => {
+      Axios
+        .get("/admin/getParticipantsYearDepartmentBatch", {
+          headers: {
+            'Authorization': `token ${data.jwt}`
+          }
+        })
+        .then(res => {
+          if (res.data.error) {
+            setError({ ...error, database: res.data.error })
+          } else {
+            setError(errorInitital)
+            setDetails(res.data)
+            setSpinner(false)
+          }
+        })
+        .catch(err => { console.log(err) })
+    })
   }, [])
   function createTestMenu(e) {
     var id = e.target.id.split("-")[2]
@@ -44,11 +55,10 @@ function CreateText() {
   }
   function getExamDetails() {
     setSpinner(true)
-    var token = JSON.parse(localStorage.getItem("UserData"))
     Axios
       .get("/admin/getExamDetails", {
         headers: {
-          'Authorization': `token ${token.jwt}`
+          'Authorization': `token ${props.token}`
         }
       })
       .then(res => {
@@ -170,11 +180,10 @@ function CreateText() {
     testInfo.oneMark = oneMark
     testInfo.twoMark = twoMark
     setTestDetails(testInfo)
-    var token = JSON.parse(localStorage.getItem("UserData"))
     Axios
       .post("/admin/create-test", testInfo, {
         headers: {
-          'Authorization': `token ${token.jwt}`
+          'Authorization': `token ${props.token}`
         }
       })
       .then(res => {
@@ -222,11 +231,10 @@ function CreateText() {
   }
   function deleteExam() {
     setSpinner(true)
-    var token = JSON.parse(localStorage.getItem("UserData"))
     Axios
       .post("/admin/deleteExam", showExamDetails, {
         headers: {
-          'Authorization': `token ${token.jwt}`
+          'Authorization': `token ${props.token}`
         }
       })
       .then(res => {

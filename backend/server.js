@@ -479,10 +479,121 @@ app.post("/admin/deleteExam", verifyToken, async function (req, res) {
       res.send({ error: "The Exam is not deleted successfully" })
     }
   } else {
-    res.send({ error: "The databse server is offline" })
+    res.send({ error: "The database server is offline" })
   }
 })
 
+app.get("/admin/getanswers",verifyToken,async function(req,res){
+  if(Main.connection.readyState===1){
+    var answers=await AnswerInfo.find({},{_id:0,answers:0,__v:0}).exec();
+    res.send({success:answers})
+  }else{
+    res.send({error:"The database server is offline"})
+  }
+})
+
+app.post("/admin/downloaddata",verifyToken,async function(req,res){
+  if(Main.connection.readyState===1){
+    var date=req.body[1]+"-"+req.body[2]+"-"+req.body[3]
+    var batch=req.body[4]
+    var department=req.body[5]
+    var year=req.body[6]
+    var subject=req.body[7]
+    var fromTime=req.body[8]
+    var toTime=req.body[9]
+    var studentRegisterNumbers=await StudentInfo.find({studentBatch:batch,studentYear:year,studentDepartment:department},{_id:0,studentRegisterNumber:1}).exec()
+    var examName=date+"-"+batch+"-"+department+"-"+year+"-"+subject+"-"+fromTime+"-"+toTime
+    var examAttendence=await AttendenceInfo.findOne({examName:examName},{_id:0,attendence:1}).exec()
+    var examAnswer=await AnswerInfo.findOne({examName:examName},{_id:0,answers:1}).exec()
+    var examQuestion=await ExamInfo.findOne({date:date,batch:batch,department:department,year:year,subjectName:subject,fromTime:fromTime,toTime:toTime},{_id:0,oneMark:1,twoMark:1}).exec()
+    examAnswer=examAnswer.answers
+    examAttendence=examAttendence.attendence
+    var out=[]
+    
+    for(var i=0;i<studentRegisterNumbers.length;i++){
+      var template={
+        Register_Number:null,
+        Attendence:null,
+        End_Test:null
+      }
+      template.Register_Number=studentRegisterNumbers[i].studentRegisterNumber
+      for(var j=0;j<examAttendence.length;j++){
+        if(studentRegisterNumbers[i].studentRegisterNumber==examAttendence[j].registerNumber){
+          template.Attendence=examAttendence[j].attendence
+          template.End_Test=examAttendence[j].endTest
+          break
+        }
+      }
+      out.push(template)
+    }
+    for(var i=0;i<out.length;i++){
+      var temp=out[i]
+      for(var j=0;j<examQuestion.oneMark.length;j++){
+        temp["Quesiton_OneMark_"+examQuestion.oneMark[j].questionNumber]=examQuestion.oneMark[j].question
+        temp["Question_OneMark_"+examQuestion.oneMark[j].questionNumber+"_A"]=examQuestion.oneMark[j].optionA
+        temp["Question_OneMark_"+examQuestion.oneMark[j].questionNumber+"_B"]=examQuestion.oneMark[j].optionB
+        temp["Question_OneMark_"+examQuestion.oneMark[j].questionNumber+"_C"]=examQuestion.oneMark[j].optionC
+        temp["Question_OneMark_"+examQuestion.oneMark[j].questionNumber+"_D"]=examQuestion.oneMark[j].optionD
+        if(temp["Attendence"]==false || temp["End_Test"]==false){
+          temp["Question_OneMark_"+examQuestion.oneMark[j].questionNumber+"_StudentAnswer"]="-"
+          temp["Question_OneMark_"+examQuestion.oneMark[j].questionNumber+"_AnswerStatus"]="-"
+        }else{
+          temp["Question_OneMark_"+examQuestion.oneMark[j].questionNumber+"_StudentAnswer"]="-"
+          temp["Question_OneMark_"+examQuestion.oneMark[j].questionNumber+"_AnswerStatus"]="-"
+        }
+      }
+      for(var j=0;j<examQuestion.twoMark.length;j++){
+        temp["Quesiton_TwoMark"+examQuestion.twoMark[j].questionNumber]=examQuestion.twoMark[j].question
+        temp["Question_TwoMark_"+examQuestion.twoMark[j].questionNumber+"_A"]=examQuestion.twoMark[j].optionA
+        temp["Question_TwoMark_"+examQuestion.twoMark[j].questionNumber+"_B"]=examQuestion.twoMark[j].optionB
+        temp["Question_TwoMark_"+examQuestion.twoMark[j].questionNumber+"_C"]=examQuestion.twoMark[j].optionC
+        temp["Question_TwoMark_"+examQuestion.twoMark[j].questionNumber+"_D"]=examQuestion.twoMark[j].optionD
+        if(temp["Attendence"]==false || temp["End_Test"]==false){
+          temp["Question_TwoMark_"+examQuestion.oneMark[j].questionNumber+"_StudentAnswer"]="-"
+          temp["Question_TwoMark_"+examQuestion.oneMark[j].questionNumber+"_AnswerStatus"]="-"
+        }else{
+          temp["Question_TwoMark_"+examQuestion.oneMark[j].questionNumber+"_StudentAnswer"]="-"
+          temp["Question_TwoMark_"+examQuestion.oneMark[j].questionNumber+"_AnswerStatus"]="-"
+        }
+      }
+      for(var j=0;j<examAnswer.length;j++){
+        var countOneMark=0
+        var countTwoMark=0
+        if(examAnswer[j].registerNumber!=temp.Register_Number){
+          continue
+        }
+        for(var k=0;k<examAnswer[j].oneMark.length;k++){
+          if(examAnswer[j].oneMark[k]==-1){
+            countOneMark+=1
+            continue
+          }
+          temp["Question_OneMark_"+examAnswer[j].oneMark[k].questionNumber+"_StudentAnswer"]=examAnswer[j].oneMark[k].studentAnswer
+          temp["Question_OneMark_"+examAnswer[j].oneMark[k].questionNumber+"_AnswerStatus"]=examAnswer[j].oneMark[k].answer
+        }
+        for(var k=0;k<examAnswer[j].twoMark.length;k++){
+          if(examAnswer[j].twoMark[k]==-1){
+            countTwoMark+=1
+            continue
+          }
+          temp["Question_TwoMark_"+examAnswer[j].twoMark[k].questionNumber+"_StudentAnswer"]=examAnswer[j].twoMark[k].studentAnswer
+          temp["Question_TwoMark_"+examAnswer[j].twoMark[k].questionNumber+"_AnswerStatus"]=examAnswer[j].twoMark[k].answer
+        }
+        temp["One_Mark_Total_Correct_Question"]=examAnswer[j].oneMarkTotal
+        temp["Two_Mark_Total_Correct_Question"]=examAnswer[j].twoMarkTotal
+        temp["One_Mark_Total_Not_Correct"]=countOneMark
+        temp["Two_Mark_Total_Not_Correct"]=countTwoMark
+        temp["Total Mark"]=(1*examAnswer[j].oneMarkTotal)+(2*examAnswer[j].twoMarkTotal)
+      }
+      temp.Register_Number="'"+temp["Register_Number"]+"'"
+      out[i]=temp
+    }
+    res.send({success:out})
+  }
+  else{
+    res.send({error:"The database server is offline."})
+  }
+
+})
 
 app.post("/student/login", async function (req, res) {
   if (Main.connection.readyState === 1) {

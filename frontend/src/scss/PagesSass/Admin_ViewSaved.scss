@@ -1,0 +1,73 @@
+.admin {
+  .admin-index {
+    border: 1px solid $shadow-color;
+    box-shadow: 5px 10px 15px $shadow-color;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    .view-saved {
+      width: 100%;
+      margin: 2rem 0;
+      padding: 0 2rem;
+      .view-saved-container {
+        padding: 0 1rem;
+        margin: 0;
+        max-height: 80vh;
+        overflow-y: scroll;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        .exam-holder {
+          width: 100%;
+          .exam-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: $font;
+            width: 100%;
+            color: $white;
+            font-size: 1.3rem;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 0.2rem;
+            text-align: center;
+            .exam-name {
+              width: 100%;
+              text-align: center;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            }
+          }
+        }
+      }
+      .view-saved-container::-webkit-scrollbar {
+        background-color: transparent !important;
+        width: 10px !important;
+      }
+      .view-saved-container::-webkit-scrollbar-thumb {
+        background-color: $font;
+        border-radius: 5px;
+      }
+    }
+  }
+}
+@media (min-width: 1200px) {
+  .admin {
+    .admin-index {
+      .view-saved {
+        padding: 0 10rem;
+        .view-saved-container {
+          padding: 0 1rem;
+          .exam-holder {
+            .answer-wrapper {
+              padding: 0 10rem;
+            }
+          }
+        }
+      }
+    }
+  }
+}

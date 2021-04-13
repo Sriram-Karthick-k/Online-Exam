@@ -16,9 +16,8 @@ function Protected(props) {
       })
       .catch((err) => console.log(err));
   } else {
-    window.location = "/admin-login";
+    window.location = "/admin/login";
   }
-  console.log(Auth)
   return Auth ? <props.component /> : <Loading />
 
 }

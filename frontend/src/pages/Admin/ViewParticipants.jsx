@@ -43,28 +43,38 @@ function ViewParticipants(props) {
   }
   useEffect(() => {
     setSpinner(true)
-    var token = JSON.parse(localStorage.getItem("UserData"))
-    Axios
-      .get("/admin/getparticipants", {
-        headers: {
-          'Authorization': `token ${token.jwt}`
-        }
-      })
-      .then(res => {
-        if (res.data.error) {
-          setError({ ...error, database: res.data.error })
-          setSpinner(false)
-        } else {
-          setDisplayBatch(res.data.studentBatch)
-          setDisplayDepartment(res.data.studentDepartment)
-          setDisplayStudentYear(res.data.studentYear)
-          setDisplayTeacherDepartment(res.data.teacherDepartment)
-          setStudentData(res.data.students)
-          setTeacherData(res.data.teachers)
-          setSpinner(false)
-        }
-      })
-      .catch(e => console.log(e))
+    var promise = new Promise((resolve, fail) => {
+      var token = JSON.parse(localStorage.getItem("UserData"))
+      if (token) {
+        resolve(token)
+      } else {
+        fail("failed")
+      }
+    })
+    promise.then(data => {
+      Axios
+        .get("/admin/getparticipants", {
+          headers: {
+            'Authorization': `token ${data.jwt}`
+          }
+        })
+        .then(res => {
+          if (res.data.error) {
+            setError({ ...error, database: res.data.error })
+            setSpinner(false)
+          } else {
+            setDisplayBatch(res.data.studentBatch)
+            setDisplayDepartment(res.data.studentDepartment)
+            setDisplayStudentYear(res.data.studentYear)
+            setDisplayTeacherDepartment(res.data.teacherDepartment)
+            setStudentData(res.data.students)
+            setTeacherData(res.data.teachers)
+            setSpinner(false)
+          }
+        })
+        .catch(e => console.log(e))
+    })
+
   }, [])
   function dropDownBatch(e) {
     if (!(e.target.classList[1])) {
@@ -134,11 +144,10 @@ function ViewParticipants(props) {
   function showDetails(e) {
     setSpinner(true)
     var details = e.target.id.split("-")
-    var token = JSON.parse(localStorage.getItem("UserData"))
     Axios
       .get("/admin/getParticipantDetails?find=" + details[(details.length - 3)] + "&type=" + details[(details.length - 1)], {
         headers: {
-          'Authorization': `token ${token.jwt}`
+          'Authorization': `token ${props.token}`
         }
       })
       .then(res => {
@@ -201,11 +210,10 @@ function ViewParticipants(props) {
         participant: showParticipantDetails,
         type: showParticipantType
       }
-      var token = JSON.parse(localStorage.getItem("UserData"))
       Axios
         .post("/admin/deleteparticipant", details, {
           headers: {
-            'Authorization': `token ${token.jwt}`
+            'Authorization': `token ${props.token}`
           }
         })
         .then(res => {
@@ -228,11 +236,10 @@ function ViewParticipants(props) {
         participant: showParticipantDetails,
         type: showParticipantType
       }
-      var token = JSON.parse(localStorage.getItem("UserData"))
       Axios
         .post("/admin/deleteparticipant", details, {
           headers: {
-            'Authorization': `token ${token.jwt}`
+            'Authorization': `token ${props.token}`
           }
         })
         .then(res => {
@@ -257,11 +264,10 @@ function ViewParticipants(props) {
     details.append("type", JSON.stringify(showParticipantType))
     details.append("page", JSON.stringify({ page: "upload" }))
     details.append("file", compressedImageFile)
-    var token = JSON.parse(localStorage.getItem("UserData"))
     Axios
       .post("/admin/updateimage", details, {
         headers: {
-          'Authorization': `token ${token.jwt}`
+          'Authorization': `token ${props.token}`
         }
       })
       .then(res => {

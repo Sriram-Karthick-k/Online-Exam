@@ -3,7 +3,7 @@ import Error from "../../components/Error"
 import Axios from "axios";
 import imageCompression from 'browser-image-compression';
 import Loading from "../../components/Loading"
-function AddParticipants() {
+function AddParticipants(props) {
 
   const addParticipantsInitial = "1"
   const errorInitial = { addParticipants: false }
@@ -72,12 +72,11 @@ function AddParticipants() {
     const data = new FormData()
     data.append("userDetails", JSON.stringify(studentDetails))
     data.append("compressedImageFile", compressedImageFile)
-    var token = JSON.parse(localStorage.getItem("UserData"))
-    if (token) {
+    if (props.token) {
       Axios
         .post("/admin/insert/student", data, {
           headers: {
-            'Authorization': `token ${token.jwt}`
+            'Authorization': `token ${props.token}`
           }
         })
         .then(res => {
@@ -115,11 +114,10 @@ function AddParticipants() {
     const data = new FormData()
     data.append("userDetails", JSON.stringify(teacherDetails))
     data.append("compressedImageFile", compressedImageFile)
-    var token = JSON.parse(localStorage.getItem("UserData"))
     Axios
       .post("/admin/insert/teacher", data, {
         headers: {
-          'Authorization': `token ${token.jwt}`
+          'Authorization': `token ${props.token}`
         }
       })
       .then(res => {

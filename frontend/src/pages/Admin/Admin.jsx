@@ -1,4 +1,4 @@
-import react, { useState } from "react"
+import react, { useEffect, useState } from "react"
 import imageCompression from 'browser-image-compression';
 import Error from "../../components/Error"
 import Axios from "axios";
@@ -6,10 +6,17 @@ import Loading from "../../components/Loading"
 import AddParticipants from "./AddParticipants"
 import ViewParticipants from "./ViewParticipants";
 import CreateTest from "./CreateText"
+import ViewSaved from "./AdminViewSaved"
 function Admin() {
   const [spinner, setSpinner] = useState(false)
-  const menuInitial = "3"
+  const menuInitial = "1"
   const [menu, setMenu] = useState(menuInitial)
+  const [token, setToken] = useState(false)
+
+  useEffect(() => {
+    var tokenGet = JSON.parse(localStorage.getItem("UserData"))
+    setToken(tokenGet.jwt)
+  }, [])
   function changeMenu(e) {
     var target = e.target.id.split("-")[2]
     if (target === "1") {
@@ -50,17 +57,13 @@ function Admin() {
         </div>
         {
           menu === "1" ?
-            <AddParticipants />
+            <AddParticipants token={token} />
             : menu === "2" ?
-              <ViewParticipants />
+              <ViewParticipants token={token} />
               : menu === "3" ?
-                <CreateTest />
+                <CreateTest token={token} />
                 :
-                <div className="viewSaved">
-                  <div className="row">
-
-                  </div>
-                </div>
+                <ViewSaved token={token} />
         }
         {
           spinner ? <Loading /> : ""
