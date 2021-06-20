@@ -7,6 +7,7 @@ function Protected(props) {
   if (data) {
     Axios.get("/Auth?token=" + data.jwt)
       .then((res) => {
+        console.log(res.data)
         if (!res.data.loggedIn) {
           localStorage.removeItem("UserData");
           window.location = "/admin/login";

@@ -12,6 +12,7 @@ function AdminViewSaved(props) {
   const [answer, setAnswer] = useState(false)
   const [showAnswer, setShowAnswer] = useState(false)
   useEffect(() => {
+    setSpinner(true)
     var promise = new Promise((resolve, fail) => {
       var token = JSON.parse(localStorage.getItem("UserData"))
       if (token) {
@@ -30,9 +31,11 @@ function AdminViewSaved(props) {
         .then(res => {
           if (res.data.error) {
             setError(res.data.error)
+            setSpinner(false)
           } else {
             setError(errorInitial)
             setAnswer(res.data.success)
+            setSpinner(false)
           }
         })
     })

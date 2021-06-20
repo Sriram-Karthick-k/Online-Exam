@@ -30,7 +30,8 @@ function StudentTestPage(props) {
       var room = JSON.parse(localStorage.getItem("roomDetails"))
       var answer = JSON.parse(localStorage.getItem("answers"))
       if (answer && (room.examName == answer.examName)) {
-        if (answer.registerNumber == room.registerNumber) {
+        console.log(room.registerNumber, answer.roomNumber)
+        if (answer.roomNumber == room.registerNumber) {
           if (answer.oneMark) {
             setAnswerOneMark(answer.oneMark)
           }
