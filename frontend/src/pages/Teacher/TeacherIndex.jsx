@@ -69,7 +69,7 @@ function TeacherIndex() {
 
   function logOut() {
     localStorage.removeItem("teacherRoomDetails")
-    window.location = "/t"
+    window.location = "/teacher"
   }
   function endStudentTest(e) {
     var registerNumber = e.target.id.split("-")[1]

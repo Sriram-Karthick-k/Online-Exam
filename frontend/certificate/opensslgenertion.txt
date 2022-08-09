@@ -1,0 +1,3 @@
+choco install mkcert
+mkcert -install
+mkcert -cert-file ./certificate/cert.pem -key-file ./certificate/key.pem localhost

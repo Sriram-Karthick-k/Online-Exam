@@ -365,7 +365,7 @@ function StudentTestPage(props) {
           setSpinner(true)
           setTimeout(() => {
             localStorage.clear()
-            window.location = "/s"
+            window.location = "/student"
           }, 5000);
         }
       })
